@@ -4,36 +4,28 @@
 #include <memory>
 #include <chrono>
 #include <fstream>
+
 // the function of reading files
-void ReadFiles(std::string fileName, std::vector<std::vector<float>>& Data, std::vector<unsigned>& Data_labels)
-{
-	std::ifstream binaryFile(fileName, std::ios::binary | std::ios::in);
-	unsigned imageSize = 3073;
-	std::unique_ptr<unsigned char[]> imagePtr(new unsigned char[imageSize]);
+void readFiles(std::string file_name,
+			   std::vector<std::vector<float>>& data,
+			   std::vector<unsigned>& data_labels){
+	std::ifstream binary_file(file_name, std::ios::binary | std::ios::in);
+	unsigned image_size = 3073;
+	std::unique_ptr<unsigned char[]> image_ptr(new unsigned char[image_size]);
 
-	if (binaryFile.is_open())
-	{
-		while (binaryFile.read(reinterpret_cast<char*>(imagePtr.get()), imageSize))
-		{
+	if (binary_file.is_open()){
+		while (binary_file.read(reinterpret_cast<char*>(image_ptr.get()),
+								image_size)){
 			// assigning labels
-			Data_labels.push_back(imagePtr.get()[0]);
-
+			data_labels.push_back(image_ptr.get()[0]);
 
 			// assigning data
-			std::vector<float> tempData(3072);
-			/*unsigned elem = 1;
-			for (unsigned c = 0; c != 3; c++) {
-			for (unsigned row = 0; row != 32; row++) {
-			for (unsigned col = 0; col != 32; col++) {
-			tempData[c][row][col] = float(imagePtr.get()[elem++]) / 255.0f - 0.5f;
+			std::vector<float> temp_data(3072);
+			for (unsigned elem = 0; elem != temp_data.size(); elem++){
+				temp_data[elem] = float(image_ptr.get()[elem + 1])
+									 / 255.0f - 0.5f;
 			}
-			}
-			}*/
-			for (unsigned elem = 0; elem != tempData.size(); elem++)
-			{
-				tempData[elem] = float(imagePtr.get()[elem + 1]) / 255.0f - 0.5f;
-			}
-			Data.push_back(tempData);
+			data.push_back(temp_data);
 		}
 	}
 	else {
@@ -42,15 +34,16 @@ void ReadFiles(std::string fileName, std::vector<std::vector<float>>& Data, std:
 	}
 }
 
-void CreateTrainData(std::vector<std::vector<float>>& train_data, std::vector<unsigned>& train_data_labels)
-{
-	ReadFiles("cifar/data_batch_1.bin", train_data, train_data_labels);
-	ReadFiles("cifar/data_batch_2.bin", train_data, train_data_labels);
-	ReadFiles("cifar/data_batch_3.bin", train_data, train_data_labels);
-	ReadFiles("cifar/data_batch_4.bin", train_data, train_data_labels);
+// the function of reading train file
+void createTrainData(std::vector<std::vector<float>>& train_data,
+					 std::vector<unsigned>& train_data_labels){
+	readFiles("cifar/data_batch_1.bin", train_data, train_data_labels);
+	readFiles("cifar/data_batch_2.bin", train_data, train_data_labels);
+	readFiles("cifar/data_batch_3.bin", train_data, train_data_labels);
+	readFiles("cifar/data_batch_4.bin", train_data, train_data_labels);
 }
 
-void CreateTestData(std::vector<std::vector<float>>& test_data, std::vector<unsigned>& test_data_labels)
-{
-	ReadFiles("cifar/test_batch.bin", test_data, test_data_labels);
+void createTestData(std::vector<std::vector<float>>& test_data,
+					std::vector<unsigned>& test_data_labels){
+	readFiles("cifar/test_batch.bin", test_data, test_data_labels);
 }

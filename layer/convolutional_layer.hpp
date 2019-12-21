@@ -1,34 +1,29 @@
 #pragma once
-#include "Helper.cuh"
-#include "HelperHost.h"
+#include "../utils/helper.cuh"
+#include "../utils/helper_host.h"
 
-class ConvolutionalLayer
-{
+class ConvolutionalLayer{
 public:
-	//ConvolutionalLayer();
 	ConvolutionalLayer(
 		unsigned const _kernel_count,
 		unsigned const _kernel_size,
 		unsigned const _stride,
 		unsigned const _channel_count,
-		unsigned const _inputX,
-		unsigned const _inputY,
+		unsigned const _input_x,
+		unsigned const _input_y,
 		float* x,
 		float* _p_gradient,
 		unsigned const _batch_size
 	);
 	~ConvolutionalLayer();
 
-	void Set_x(float* new_x);
+	void setX(float* new_x);
 
-	void ConvolutionForward();
-	void ConvolutionBackward();
-
-
+	void convolutionForward();
+	void convolutionBackward();
 
 	// understood varibles
-	const unsigned outputX, outputY;
-
+	const unsigned output_x, output_y;
 
 	float* y{ nullptr }; // output after relu, y = RELU(o); for relu cudnnActivationForward is used
 	float* gradient{ nullptr }; // gradient is the error of every 'y'. So it's size is the same as 'y' or 'o'.
@@ -46,7 +41,7 @@ private:
 	unsigned const kernel_size;
 	unsigned const stride;
 	unsigned const channel_count;
-	unsigned const inputX, inputY;
+	unsigned const input_x, input_y;
 	unsigned const batch_size;
 
 
@@ -68,11 +63,10 @@ private:
 	void* backward_data_workspace{ nullptr }; // needed for cudnnConvolutionDataFilter and...........
 
 	// Tensor descriptions for input data, weights, biases, convolution and output respectively
-	cudnnTensorDescriptor_t xDesc;
-	cudnnFilterDescriptor_t wDesc;
-	cudnnTensorDescriptor_t bDesc;
-	cudnnConvolutionDescriptor_t convDesc;
-	cudnnTensorDescriptor_t yDesc;
-
+	cudnnTensorDescriptor_t x_desc;
+	cudnnFilterDescriptor_t w_desc;
+	cudnnTensorDescriptor_t b_desc;
+	cudnnConvolutionDescriptor_t conv_desc;
+	cudnnTensorDescriptor_t y_desc;
 };
 

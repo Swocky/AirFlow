@@ -18,24 +18,19 @@ extern cublasHandle_t cublas;
 // get the learning rate to avoid duplicate definition
 extern float learning_rate;
 
-using namespace std;
-
-// the 
 #define checkCUDNN(expression)                               \
   {                                                          \
     cudnnStatus_t status = (expression);                     \
     if (status != CUDNN_STATUS_SUCCESS) {                    \
-      cerr << "CUDNN Error on file " << __FILE__ << " on line:  "      \
+      std::cerr << "CUDNN Error on file " << __FILE__ << " on line:  "      \
                 << __LINE__ << ' ' \
-				<< cudnnGetErrorString(status) << endl; \
+				<< cudnnGetErrorString(status) << std::endl; \
     }                                                        \
   }
 
-
-
-// macro for checking cuda errors
+// the Macro definition of checking if cuda function is successfully executed
 #define checkCuda(expression)										\
- {																	\
+{																	\
 	cudaError_t err = (expression);									\
 	if (err != cudaSuccess) {										\
 		cerr << "Cuda Error on file " << __FILE__				\
@@ -45,8 +40,9 @@ using namespace std;
  }
 
 // Randomizing 'n' number of floats, starting from 'data'
-inline void Randomize(float* data, unsigned const n, const float stddev = 0.07f)
-{
+inline void randomize(float* data,
+					  unsigned const n,
+					  const float stddev = 0.07f){
 	curandGenerator_t gen;
 	curandCreateGenerator(&gen, CURAND_RNG_PSEUDO_MT19937);
 	curandSetPseudoRandomGeneratorSeed(gen, clock());
@@ -55,8 +51,7 @@ inline void Randomize(float* data, unsigned const n, const float stddev = 0.07f)
 
 // print one dimension vector
 template <typename T>
-std::ostream& operator<<(std::ostream& stream, const std::vector<T> vec)
-{
+std::ostream& operator<<(std::ostream& stream, const std::vector<T> vec){
 	for (auto &i : vec){
 		stream << i << ' ';
 	}
@@ -64,11 +59,10 @@ std::ostream& operator<<(std::ostream& stream, const std::vector<T> vec)
 }
 
 // to cout an array which resides in gpu ram
-extern void ReadArrayAPI(float* Arr, unsigned const n);
+extern void readArrayAPI(float* arr, unsigned const n);
 
 // adjust learning_rate
-inline void UpdateLR(float* learning_rate, unsigned const batch_size)
-{
+inline void updateLR(float* learning_rate, unsigned const batch_size){
 	*learning_rate = 0.001
 	*learning_rate /= batch_size;
 }

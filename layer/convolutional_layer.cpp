@@ -1,13 +1,13 @@
 #include "convolution_layer.hpp"
 
-// 卷积层构造函数
+// convlutional layer constructor
 ConvolutionalLayer::ConvolutionalLayer(
 	unsigned const _kernel_count, 
 	unsigned const _kernel_size,
 	unsigned const _stride,
 	unsigned const _channel_count,
-	unsigned const _inputX,
-	unsigned const _inputY,
+	unsigned const _input_x,
+	unsigned const _input_y,
 	float* _x,
 	float* _p_gradient,
 	unsigned const _batch_size
@@ -16,25 +16,23 @@ ConvolutionalLayer::ConvolutionalLayer(
 	kernel_size(_kernel_size),
 	stride(_stride),
 	channel_count(_channel_count),
-	inputX(_inputX),
-	inputY(_inputY),
+	input_x(_input_x),
+	input_y(_input_y),
 	x(_x),
 	p_gradient(_p_gradient),
-	outputX((_inputX - _kernel_size) / _stride + 1),
-	outputY((_inputY - _kernel_size) / _stride + 1),
-	batch_size(_batch_size)
-{
-	
-	// creating & setting data descriptor 'xDesc'
-	checkCUDNN(cudnnCreateTensorDescriptor(&xDesc));
+	output_x((_input_x - _kernel_size) / _stride + 1),
+	output_y((_input_y - _kernel_size) / _stride + 1),
+	batch_size(_batch_size){
+	// creating & setting data descriptor 'x_desc'
+	checkCUDNN(cudnnCreateTensorDescriptor(&x_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
-		xDesc,
+		x_desc,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		batch_size,
 		channel_count,
-		inputY,
-		inputX
+		input_y,
+		input_x
 	));
 
 
@@ -43,10 +41,10 @@ ConvolutionalLayer::ConvolutionalLayer(
 	checkCuda(cudaMalloc(&w, w_bytes));
 	// randomizing weights 'w'
 	Randomize(w, w_bytes / sizeof(float), 0.03f);
-	// creating & setting filter descriptions for weights 'wDesc'
-	checkCUDNN(cudnnCreateFilterDescriptor(&wDesc));
+	// creating & setting filter descriptions for weights 'w_desc'
+	checkCUDNN(cudnnCreateFilterDescriptor(&w_desc));
 	checkCUDNN(cudnnSetFilter4dDescriptor(
-		wDesc,
+		w_desc,
 		CUDNN_DATA_FLOAT,
 		CUDNN_TENSOR_NCHW,
 		kernel_count,
@@ -60,10 +58,10 @@ ConvolutionalLayer::ConvolutionalLayer(
 	checkCuda(cudaMalloc(&b, b_bytes), 0.01f);
 	// randomizing biases 'b'
 	Randomize(b, b_bytes / sizeof(float));
-	// creating & setting tensor descriptions for biases 'bDesc'
-	checkCUDNN(cudnnCreateTensorDescriptor(&bDesc));
+	// creating & setting tensor descriptions for biases 'b_desc'
+	checkCUDNN(cudnnCreateTensorDescriptor(&b_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
-		bDesc,
+		b_desc,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		1, kernel_count, 1, 1
@@ -75,9 +73,9 @@ ConvolutionalLayer::ConvolutionalLayer(
 	checkCuda(cudaMalloc(&o, y_bytes));
 	checkCuda(cudaMalloc(&y, y_bytes));
 	// creating & setting tensor descriptions for 'o' & 'y'
-	checkCUDNN(cudnnCreateTensorDescriptor(&yDesc));
+	checkCUDNN(cudnnCreateTensorDescriptor(&y_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
-		yDesc,
+		y_desc,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		batch_size,
@@ -86,7 +84,7 @@ ConvolutionalLayer::ConvolutionalLayer(
 	));
 
 
-	// allocating gradients 'gradient', it's size is the same y, and when gradient description is required, yDesc can be used
+	// allocating gradients 'gradient', it's size is the same y, and when gradient description is required, y_desc can be used
 	size_t const gradient_bytes = batch_size * kernel_count * outputY * outputX * sizeof(float);
 	checkCuda(cudaMalloc(&gradient, gradient_bytes));
 
@@ -100,10 +98,10 @@ ConvolutionalLayer::ConvolutionalLayer(
 	));
 
 
-	// creating & setting convolution descriptor 'convDesc'
-	checkCUDNN(cudnnCreateConvolutionDescriptor(&convDesc));
+	// creating & setting convolution descriptor 'conv_desc'
+	checkCUDNN(cudnnCreateConvolutionDescriptor(&conv_desc));
 	checkCUDNN(cudnnSetConvolution2dDescriptor(
-		convDesc,
+		conv_desc,
 		0, 0, /*zero padding*/
 		stride, stride,
 		1, 1, /*normal dilation*/
@@ -115,50 +113,46 @@ ConvolutionalLayer::ConvolutionalLayer(
 	// getting convolution forward algorithm 'fwd_algo'
 	checkCUDNN(cudnnGetConvolutionForwardAlgorithm(
 		cudnn,
-		xDesc,
-		wDesc,
-		convDesc,
-		yDesc,
+		x_desc,
+		w_desc,
+		conv_desc,
+		y_desc,
 		CUDNN_CONVOLUTION_FWD_PREFER_FASTEST,
 		0, /*unlimited for now, later will get needed workspace*/
 		&fwd_algo
 	));
 
-
 	// getting forward workspace size & allocating 'forward_workspace'
 	checkCUDNN(cudnnGetConvolutionForwardWorkspaceSize(
 		cudnn,
-		xDesc,
-		wDesc,
-		convDesc,
-		yDesc,
+		x_desc,
+		w_desc,
+		conv_desc,
+		y_desc,
 		fwd_algo,
 		&forward_workspace_bytes
 	));
-	//std::cout << "trying to allocate: " << forward_workspace_bytes / 1024.0f / 1024.0f << "Mb.\n";
 	checkCuda(cudaMalloc(&forward_workspace, forward_workspace_bytes));
 
 
 	// getting convolution backward filter algorithm 'bwd_filter_algo'
 	checkCUDNN(cudnnGetConvolutionBackwardFilterAlgorithm(
 		cudnn,
-		xDesc,
-		yDesc, /*same dimensions as dyDesc*/
-		convDesc,
-		wDesc, /*same dimensions as dwDesc*/
+		x_desc,
+		y_desc, /*same dimensions as dy_desc*/
+		conv_desc,
+		w_desc, /*same dimensions as dw_desc*/
 		CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST,
 		0, /*unlimited for now, later will get needed workspace*/
 		&bwd_filter_algo
 	));
-
-
 	// getting backward filter workspace size & allocating 'backward_filter_workspace'
 	checkCUDNN(cudnnGetConvolutionBackwardFilterWorkspaceSize(
 		cudnn,
-		xDesc,
-		yDesc,
-		convDesc,
-		wDesc,
+		x_desc,
+		y_desc,
+		conv_desc,
+		w_desc,
 		bwd_filter_algo,
 		&backward_filter_workspace_bytes
 	));
@@ -170,10 +164,10 @@ ConvolutionalLayer::ConvolutionalLayer(
 	// getting convolution backward data algorithm 'bwd_data_algo'
 	checkCUDNN(cudnnGetConvolutionBackwardDataAlgorithm(
 		cudnn,
-		wDesc,
-		yDesc,
-		convDesc,
-		xDesc,
+		w_desc,
+		y_desc,
+		conv_desc,
+		x_desc,
 		CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST,
 		0,
 		&bwd_data_algo
@@ -183,28 +177,23 @@ ConvolutionalLayer::ConvolutionalLayer(
 	// getting backward data workspace size & allocating 'backward_data_workspace'
 	checkCUDNN(cudnnGetConvolutionBackwardDataWorkspaceSize(
 		cudnn,
-		wDesc,
-		yDesc,
-		convDesc,
-		xDesc,
+		w_desc,
+		y_desc,
+		conv_desc,
+		x_desc,
 		bwd_data_algo,
 		&backward_data_workspace_bytes
 	));
-	//std::cout << "trying to allocate: " << backward_data_workspace_bytes / 1024.0f / 1024.0f << "Mb.\n";
 	checkCuda(cudaMalloc(&backward_data_workspace, backward_data_workspace_bytes));
-
-
 }
 
 
-ConvolutionalLayer::~ConvolutionalLayer()
-{
-
+ConvolutionalLayer::~ConvolutionalLayer(){
 }
 
-void ConvolutionalLayer::Set_x(float* new_x) { x = new_x; }
+void ConvolutionalLayer::setX(float* new_x) { x = new_x; }
 
-void ConvolutionalLayer::ConvolutionForward()
+void ConvolutionalLayer::convolutionForward()
 {
 	const float alpha = 1.0f, beta = 0.0f;
 
@@ -212,22 +201,22 @@ void ConvolutionalLayer::ConvolutionForward()
 	checkCUDNN(cudnnConvolutionForward(
 		cudnn,
 		&alpha,
-		xDesc, x,
-		wDesc, w,
-		convDesc,
+		x_desc, x,
+		w_desc, w,
+		conv_desc,
 		fwd_algo,
 		forward_workspace, forward_workspace_bytes,
 		&beta,
-		yDesc, o
+		y_desc, o
 	));
 
 	// adding bias, o += b
 	checkCUDNN(cudnnAddTensor(
 		cudnn,
 		&alpha,
-		bDesc, b,
+		b_desc, b,
 		&alpha,
-		yDesc, o
+		y_desc, o
 	));
 
 	// relu, y = RELU(o), 'RELU()' is a symbol not an actual function
@@ -235,22 +224,22 @@ void ConvolutionalLayer::ConvolutionForward()
 		cudnn,
 		activationDesc,
 		&alpha,
-		yDesc, o,
+		y_desc, o,
 		&beta,
-		yDesc, y
+		y_desc, y
 	));
 
 
 }
 
-void ConvolutionalLayer::ConvolutionBackward()
+void ConvolutionalLayer::convolutionBackward()
 {
 	// used SGD momentum to update weights
-	// if wanted to use only sgd, change momentumB with beta, momentumG with alpha 
+	// if wanted to use only sgd, change momentum_b with beta, momentum_g with alpha 
 	// in 'cudnnConvolutionBackwardFilter' and 'cudnnConvolutionBackwardBias'
 
-	const float alpha = 1.0f, beta = 0.0f, momentumB = 0.9f;
-	const float momentumG = 1.0f - momentumB;
+	const float alpha = 1.0f, beta = 0.0f, momentum_b = 0.9f;
+	const float momentum_g = 1.0f - momentum_b;
 	//const float p_gradientMul = 1.5f;
 
 	// not sure if it works...
@@ -258,49 +247,47 @@ void ConvolutionalLayer::ConvolutionBackward()
 		cudnn,
 		activationDesc,
 		&alpha,
-		yDesc, y,
-		yDesc, gradient,
-		yDesc, o,
+		y_desc, y,
+		y_desc, gradient,
+		y_desc, o,
 		&beta,
-		yDesc, gradient
+		y_desc, gradient
 	));
 
-	// updating weights?
+	// updating weights
 	checkCUDNN(cudnnConvolutionBackwardFilter(
 		cudnn,
 		&learning_rate,
-		xDesc, x,
-		yDesc, gradient,
-		convDesc,
+		x_desc, x,
+		y_desc, gradient,
+		conv_desc,
 		bwd_filter_algo,
 		backward_filter_workspace,
 		backward_filter_workspace_bytes,
 		&alpha,
-		wDesc, w
+		w_desc, w
 	));
 
-	// updating biases?
+	// updating biases
 	checkCUDNN(cudnnConvolutionBackwardBias(
 		cudnn,
 		&learning_rate,
-		yDesc, gradient,
+		y_desc, gradient,
 		&alpha,
-		bDesc, b
+		b_desc, b
 	));
 
 	// passing the gradient to backward layers
 	checkCUDNN(cudnnConvolutionBackwardData(
 		cudnn,
-		&momentumG,
-		wDesc, w,
-		yDesc, gradient,
-		convDesc,
+		&momentum_g,
+		w_desc, w,
+		y_desc, gradient,
+		conv_desc,
 		bwd_data_algo,
 		backward_data_workspace,
 		backward_data_workspace_bytes,
-		&momentumB,
-		xDesc, p_gradient
+		&momentum_b,
+		x_desc, p_gradient
 	));
-
-
 }
