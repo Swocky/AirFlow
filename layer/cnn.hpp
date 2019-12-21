@@ -36,5 +36,45 @@ public:
 	~CNN();
 
 	void train(unsigned const epoch);
-	void test();
+	float test();
+
+private:
+	// definining vars of the cnn
+	unsigned const class_num;
+	unsigned const channel_num;
+	const unsigned image_x;
+	const unsigned image_y;
+	std::vector<unsigned>& kernel_nums;
+	std::vector<unsigned>& kernel_sizes;
+	std::vector<unsigned>& strides;
+	std::vector<unsigned>& neuron_nums;
+	const unsigned batch_size;
+
+	// understood varibles
+	const unsigned train_data_num;
+	const unsigned test_data_num;
+	const unsigned input_size;
+	const unsigned convolutional_layer_num;
+
+
+	// host data
+	std::vector<std::vector<float>>& train_data;
+	std::vector<unsigned>& train_labels;
+	std::vector<std::vector<float>>& test_data;
+	std::vector<unsigned>& test_labels;
+
+	// device data ptrs
+	float* dev_train_data{ nullptr };
+	unsigned* dev_train_labels{ nullptr };
+	float* dev_test_data{ nullptr };
+	unsigned* dev_test_labels{ nullptr };
+
+	// vector of the Convolutional Layers
+	std::vector<ConvolutionalLayer> conv_layers;
+
+	// FullyConnected
+	FullyConnected fc;
+
+	// softmaxLayer
+	SoftmaxLayer softmax_layer;
 };

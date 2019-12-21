@@ -2,39 +2,39 @@
 
 SoftmaxLayer::SoftmaxLayer() {} // default
 
-void SoftmaxLayer::init(unsigned const _class_count,
-	                    unsigned const _input_count,
+void SoftmaxLayer::init(unsigned const _class_num,
+	                    unsigned const _input_num,
 	                    float* _x,
 	                    float* _p_gradient,
 	                    unsigned const _batch_size){
-	class_count = _class_count;
-	input_count = _input_count;
+	class_num = _class_num;
+	input_num = _input_num;
 	x = _x;
 	p_gradient = _p_gradient;
 	batch_size = _batch_size;
 
 	// allocating weights, 'w'
-	size_t const w_bytes = input_count * class_count * sizeof(float);
+	size_t const w_bytes = input_num * class_num * sizeof(float);
 	checkCuda(cudaMalloc(&w, w_bytes));
 	randomize(w, w_bytes / sizeof(float), 0.04f);
 
 
 	// allocating biases, 'b' & creating and setting b_desc
-	size_t const b_bytes = class_count * sizeof(float);
+	size_t const b_bytes = class_num * sizeof(float);
 	checkCuda(cudaMalloc(&b, b_bytes));
-	randomize(b, class_count, 0.01f);
+	randomize(b, class_num, 0.01f);
 	checkCUDNN(cudnnCreateTensorDescriptor(&b_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
 		b_desc,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		1,
-		class_count,
+		class_num,
 		1, 1
 	));
 
 	// allocating output before softmax, 'o' & softmax, 'y' & creating and setting y_desc
-	size_t const y_bytes = class_count * batch_size * sizeof(float);
+	size_t const y_bytes = class_num * batch_size * sizeof(float);
 	checkCuda(cudaMalloc(&o, y_bytes));
 	checkCuda(cudaMalloc(&y, y_bytes));
 	checkCUDNN(cudnnCreateTensorDescriptor(&y_desc));
@@ -43,7 +43,7 @@ void SoftmaxLayer::init(unsigned const _class_count,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		batch_size,
-		class_count,
+		class_num,
 		1, 1
 	));
 
@@ -74,12 +74,12 @@ void SoftmaxLayer::feedForward()
 	// multiplying by weights, o = x*w;
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_N, CUBLAS_OP_N,
-		class_count, batch_size, input_count,
+		class_num, batch_size, input_num,
 		&alpha,
-		w, class_count,
-		x, input_count,
+		w, class_num,
+		x, input_num,
 		&beta,
-		o, class_count
+		o, class_num
 	);
 
 	// adding biases, o += b;
@@ -111,33 +111,33 @@ void SoftmaxLayer::backprop()
 	// passing gradient to previous layer
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_T, CUBLAS_OP_N,
-		input_count, batch_size, class_count,
+		input_num, batch_size, class_num,
 		&alpha,
-		w, class_count,
-		gradient, class_count,
+		w, class_num,
+		gradient, class_num,
 		&beta,
-		p_gradient, input_count
+		p_gradient, input_num
 	);
 
 	// updating weights, 'w'
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_N, CUBLAS_OP_T,
-		class_count, input_count, batch_size,
+		class_num, input_num, batch_size,
 		&learning_rate_l,
-		gradient, class_count,
-		x, input_count,
+		gradient, class_num,
+		x, input_num,
 		&alpha,
-		w, class_count
+		w, class_num
 	);
 
 	// updating biases, 'b'
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_N, CUBLAS_OP_N,
-		class_count, 1, batch_size,
+		class_num, 1, batch_size,
 		&learning_rate_l,
-		gradient, class_count,
+		gradient, class_num,
 		onevec, batch_size,
 		&alpha,
-		b, class_count
+		b, class_num
 	);
 }

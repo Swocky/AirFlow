@@ -8,11 +8,11 @@
 #include <ctime>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#include "ReadCifar10.hpp"
-#include "ConvolutionalLayer.hpp"
+#include "utils/cifar10_reader.hpp"
+#include "layer/convolutional_layer.hpp"
 #include "layer/cnn.hpp"
 #include "utils/helper.cuh"
-#include "utils/helper_host.h"
+#include "utils/helper_host.hpp"
 
 cudnnHandle_t cudnn; // global cudnn Handle
 cublasHandle_t cublas; // global cublas Handle
@@ -30,10 +30,10 @@ int main(){
 	//		H*W red values, H*W green values, H*W blue values.
 	//
 	// 2. fill in 1d vector<unsigned> labels
-	//		which go from 0 to class_count - 1.
-	//		count of label elements must be equal to the corresponding data...
+	//		which go from 0 to class_num - 1.
+	//		num of label elements must be equal to the corresponding data...
 	//
-	// 3. give values to necessary variables like batch_size or channel_count of the input image
+	// 3. give values to necessary variables like batch_size or channel_num of the input image
 	//
 	// here as an example cifar-10 dataset is used.
 	// download dataset https://www.cs.toronto.edu/~kriz/cifar.html, and put the files into a folder named 'cifar' relative to project's folder.
@@ -47,23 +47,22 @@ int main(){
 
 	createTrainData(train_data, train_labels);
 	createTestData(test_data, test_labels);
-	std::cout << "Data has been read... \n";
-	std::cout << "Train data count: " << train_data.size() << '\n';
-	std::cout << "Test data count: " << test_data.size() << '\n';
+	std::cout << "Train data num: " << train_data.size() << '\n';
+	std::cout << "Test data num: " << test_data.size() << '\n';
 
 	/// creating architecture of the CNN
 	// Necessary variables...
-	std::vector<unsigned> kernel_counts = { 64, 64, 32 };
+	std::vector<unsigned> kernel_nums = { 64, 64, 32 };
 	std::vector<unsigned> kernel_sizes = { 4, 4, 3 };
 	std::vector<unsigned> strides = { 1, 1, 1 };
-	std::vector<unsigned> neuron_counts = { 1024 };
-	unsigned const batch_size = 8;
+	std::vector<unsigned> neuron_nums = { 1024 };
+	unsigned const batch_size = 32;
 
 	learning_rate /= batch_size;
 
-	unsigned const class_count = 10;
+	unsigned const class_num = 10;
 	unsigned const imageX = 32, imageY = 32;
-	unsigned const channel_count = 3;
+	unsigned const channel_num = 3;
 
 	// initing cnn object & allocating needed memories on the gpu and randomizing weights and biases...
 	CNN cnn(
@@ -71,18 +70,18 @@ int main(){
 		train_labels,
 		test_data,
 		test_labels,
-		class_count,
-		channel_count,
+		class_num,
+		channel_num,
 		imageX, imageY,
-		kernel_counts,
+		kernel_nums,
 		kernel_sizes,
 		strides,
-		neuron_counts,
+		neuron_nums,
 		batch_size
 	);
 
 	// Training Network for some number of epochs
-	cnn.Train(10000);
+	cnn.train(10000);
 
 	std::cout << "Press Enter to continue...\n";
 	std::cin.get();

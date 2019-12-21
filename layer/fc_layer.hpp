@@ -1,5 +1,5 @@
 #pragma once
-#include "../utils/helper_host.h"
+#include "../utils/helper_host.hpp"
 
 class FullyConnectedLayer
 {
@@ -10,8 +10,8 @@ public:
 	~FullyConnectedLayer();
 
 	void init(
-		unsigned const _neuron_count,
-		unsigned const _input_count,
+		unsigned const _neuron_num,
+		unsigned const _input_num,
 		float* _x,
 		float* _p_gradient,
 		unsigned const _batch_size
@@ -22,8 +22,8 @@ public:
 
 
 	// public members
-	unsigned neuron_count; //
-	unsigned input_count; //
+	unsigned neuron_num; //
+	unsigned input_num; //
 	float* y{ nullptr }; //
 	float* gradient{ nullptr }; //
 	float* p_gradient{ nullptr }; // previous layer's gradient

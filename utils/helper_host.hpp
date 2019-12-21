@@ -33,9 +33,9 @@ extern float learning_rate;
 {																	\
 	cudaError_t err = (expression);									\
 	if (err != cudaSuccess) {										\
-		cerr << "Cuda Error on file " << __FILE__				\
+		std::cerr << "Cuda Error on file " << __FILE__				\
 				  << " on line: " << __LINE__ << ' '				\
-				  << cudaGetErrorString(err) << endl;				\
+				  << cudaGetErrorString(err) << std::endl;				\
 	}																\
  }
 
@@ -63,6 +63,6 @@ extern void readArrayAPI(float* arr, unsigned const n);
 
 // adjust learning_rate
 inline void updateLR(float* learning_rate, unsigned const batch_size){
-	*learning_rate = 0.001
+	*learning_rate = 0.001;
 	*learning_rate /= batch_size;
 }
