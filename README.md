@@ -1,4 +1,4 @@
 # AirFlow
 An Open Source Deep Learning Framework Based on cuDNN.
-# Thancks
+# Thanks
 https://github.com/BilgehanSel/SelCNN
