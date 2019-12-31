@@ -137,9 +137,9 @@ VGG::VGG(
 	// neurons in LeNet
 	fc.init(
 		neuron_nums,
-		conv_layers.back().output_x * conv_layers.back().output_y * kernel_nums.back(),
-		conv_layers.back().y,
-		conv_layers.back().gradient,
+		pool2.y_height * pool2.y_width * channel_num, // 这里可能有问题
+		pool2.y,
+		pool2.gradient,
 		batch_size);
 
 	// init the last layer of the network which is softmax

@@ -17,7 +17,8 @@
 #include "softmax_layer.hpp"
 #include "pooling_layer.hpp"
 
-class CNN {
+class CNN 
+{
 public:
 	CNN(std::vector<std::vector<float>>& _train_data,
 		std::vector<unsigned>& _train_labels,
