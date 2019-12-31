@@ -1,22 +1,21 @@
-#include "cnn.hpp"
+#include "vgg.hpp"
 
-// the CNN constructor implementation
-CNN::CNN(
-	std::vector<std::vector<float>>& _train_data,
-	std::vector<unsigned>& _train_labels,
-	std::vector<std::vector<float>>& _test_data,
-	std::vector<unsigned>& _test_labels,
-	const unsigned _class_num,
-	const unsigned _channel_num,
-	const unsigned _image_x,
-	const unsigned _image_y,
-	std::vector<unsigned>& _kernel_nums,
-	std::vector<unsigned>& _kernel_sizes,
-	std::vector<unsigned>& _strides,
-	std::vector<unsigned>& _neuron_nums,
-	const unsigned _batch_size
+VGG::VGG(
+    std::vector<std::vector<float>>& _train_data,
+    std::vector<unsigned>& _train_labels,
+    std::vector<std::vector<float>>& _test_data,
+    std::vector<unsigned>& _test_labels,
+    const unsigned _class_num,
+    const unsigned _channel_num,
+    const unsigned _image_x,
+    const unsigned _image_y,
+    std::vector<unsigned>& _kernel_nums,
+    std::vector<unsigned>& _kernel_sizes,
+    std::vector<unsigned>& _strides,
+    std::vector<unsigned>& _neuron_nums,
+    const unsigned _batch_size
 ) :
-	train_data(_train_data),
+    train_data(_train_data),
 	train_labels(_train_labels),
 	test_data(_test_data),
 	test_labels(_test_labels),
@@ -34,8 +33,12 @@ CNN::CNN(
 	convolutional_layer_num(_kernel_nums.size()),
 	batch_size(_batch_size)
 {
-	// output parameters of the CNN
-	std::cout << "CNN parameters------------------" << std::endl;
+    // 固定VGG的conv层大小为2
+    // assert(kernel_nums.size() == kernel_sizes.size());
+    // assert(image_nums.size() == 2);
+
+    // output parameters of the CNN
+	std::cout << "VGG parameters------------------" << std::endl;
 	std::cout << "input size: " << input_size << std::endl;
 	std::cout << "batch size: " << batch_size << std::endl;
 	std::cout << "train data number: " << train_data_num << std::endl;
@@ -46,7 +49,7 @@ CNN::CNN(
 	std::cout << "class numbers: " << class_num << std::endl;
 	std::cout << "--------------------------------" << std::endl;
 
-	// allocate and copy to dev_train_data
+    	// allocate and copy to dev_train_data
 	size_t const train_data_bytes = train_data_num * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dev_train_data, train_data_bytes));
 	for (unsigned i = 0; i != train_data_num; i++)
@@ -84,47 +87,50 @@ CNN::CNN(
 	size_t const dummy_gradient_bytes = batch_size * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dummy_gradient, dummy_gradient_bytes));
 
-	// setting up the pooling layers
-	// for (unsigned int i = 0; i != convolutional_layer_num; i++) {
-	// 	pooling_layers.push_back(PoolingLayer(
-	// 		??????????
-	// 	));
-	// }
-
-	// setting up the convolutional layers
-	for (unsigned i = 0; i != convolutional_layer_num; i++)
-	{
-		if (i == 0)
-		{
-			conv_layers.push_back(ConvolutionalLayer(
-				kernel_nums[i],
-				kernel_sizes[i],
-				strides[i],
+    conv1 = ConvolutionalLayer(
+				kernel_nums[0],
+				kernel_sizes[0],
+				strides[0],
 				channel_num,
 				image_x, image_y,
 				dev_train_data,
 				dummy_gradient,
-				batch_size));
-			// dummy gradient is used because in this version,
-			// there is no way to specify the first layer of
-			// the convolutional layer...
-			// when using ConvolutionalLayer::BackProp(), all
-			// layers propagate data back to previous layer.
-		}
-		else
-		{
-			conv_layers.push_back(ConvolutionalLayer(
-				kernel_nums[i],
-				kernel_sizes[i],
-				strides[i],
-				kernel_nums[i - 1],
-				conv_layers.back().output_x,
-				conv_layers.back().output_y,
-				conv_layers.back().y,
-				conv_layers.back().gradient,
-				batch_size,CUDNN_ACTIVATION_RELU));
-		}
-	}
+				batch_size, CUDNN_ACTIVATION_RELU);
+    
+    pool1 = PoolingLayer();
+	pool1.init(
+		conv1.y_desc,
+		conv1.y,
+		conv1.output_x,
+		conv1,output_y,
+		2,
+		1,
+		NULL, // polling_type
+		channel_num, // 这里可能有问题
+		batch_size,
+	);
+
+	conv2 = ConvolutionalLayer(
+			kernel_nums[1],
+			kernel_sizes[1],
+			strides[1],
+			kernel_nums[0],
+			pool1.y_height, pool1.y_width,
+			pool1.y,
+			pool1.gradient,
+			batch_size, CUDNN_ACTIVATION_RELU);
+	pool2 = PoolingLayer();
+	pool2.init(
+		conv2.y_desc,
+		conv2.y,
+		conv2.output_x,
+		conv2,output_y,
+		2,
+		1,
+		NULL, // polling_type
+		channel_num, // 这里可能有问题
+		batch_size,
+	);
 
 	// init FullyConnected class object, which will use
 	// FullyConnectedLayer class to represent fully connected
@@ -145,15 +151,12 @@ CNN::CNN(
 		batch_size);
 }
 
-// the Destructor of CNN class
-CNN::~CNN() {}
+VGG::~VGG(){}
 
-// Train the network for some number of epochs...
-void CNN::train(unsigned const epoch)
-{
+void VGG::train(unsigned const epoch){
 	for (unsigned p = 0; p != epoch; p++)
 	{
-		std::cout << "[Epoch: " << p+1 <<"]"<<std::endl;
+		std::cout << "[Epoch: " << p + 1 <<"]"<<std::endl;
 		unsigned *label_ptr{nullptr};
 		unsigned error_num_sum = 0;
 		int batch = 0;
@@ -163,15 +166,15 @@ void CNN::train(unsigned const epoch)
 			batch++;
 			int error_num = 0;
 			// set x for the network's input
-			conv_layers.front().setX(dev_train_data + i * input_size);
+			conv1.setX(dev_train_data + i * input_size)
 			// adjust pointer for the inputs' labels
 			label_ptr = dev_train_labels + i;
 
 			// manually forwarding ConvolutionLayer class objects
-			for (auto &c : conv_layers)
-			{
-				c.convolutionForward();
-			}
+			conv1.convolutionForward();
+			pool1.feedForward();
+			conv2.convolutionForward();
+			pool2.feedForward();
 			// manually forwarding FullyConnected class which
 			// forwards individual layers
 			fc.forward();
@@ -206,10 +209,10 @@ void CNN::train(unsigned const epoch)
 								   class_num, batch_size, label_ptr);
 			softmax_layer.backprop();
 			fc.backprop();
-			for (int k = conv_layers.size() - 1; k >= 0; k--)
-			{
-				conv_layers[k].convolutionBackward();
-			}
+			pool2.backprop();
+			conv2.convolutionBackward();
+			pool1.backprop();
+			conv1.convolutionBackward();
 		}
 
 		float acc = test();
@@ -223,7 +226,7 @@ void CNN::train(unsigned const epoch)
 }
 
 // Tests networks performance(accuracy) on the test_data
-float CNN::test()
+float VGG::test()
 {
 	unsigned *label_ptr{nullptr};
 	unsigned error_num = 0;
@@ -231,13 +234,13 @@ float CNN::test()
 	for (unsigned i = 0; i < (test_data_num / batch_size) * batch_size - batch_size; i += batch_size)
 	{
 		//std::cout << "iteration is: " << i << std::std::endl;
-		conv_layers.front().setX(dev_test_data + i * input_size);
+		conv1.setX(dev_test_data + i * input_size);
 		label_ptr = dev_test_labels + i;
 
-		for (auto &c : conv_layers)
-		{
-			c.convolutionForward();
-		}
+		conv1.convolutionForward();
+		pool1.feedForward();
+		conv2.convolutionForward();
+		pool2.feedForward();
 
 		fc.forward();
 		softmax_layer.feedForward();

@@ -17,9 +17,9 @@
 #include "softmax_layer.hpp"
 #include "pooling_layer.hpp"
 
-class CNN {
+class VGG{
 public:
-	CNN(std::vector<std::vector<float>>& _train_data,
+    VGG(std::vector<std::vector<float>>& _train_data,
 		std::vector<unsigned>& _train_labels,
 		std::vector<std::vector<float>>& _test_data,
 		std::vector<unsigned>& _test_labels,
@@ -32,15 +32,15 @@ public:
 		std::vector<unsigned>& _strides,
 		std::vector<unsigned>& _neuron_nums,
 		const unsigned _batch_size
-	);
+    );
 
-	~CNN();
+    ~VGG();
 
-	void train(unsigned const epoch);
-	float test();
+    void train(unsigned const epoch);
+    float test();
 
 private:
-	// definining vars of the cnn
+    // definining vars of the vgg
 	unsigned const class_num;
 	unsigned const channel_num;
 	const unsigned image_x;
@@ -49,34 +49,31 @@ private:
 	std::vector<unsigned>& kernel_sizes;
 	std::vector<unsigned>& strides;
 	std::vector<unsigned>& neuron_nums;
-	const unsigned batch_size;
+    const unsigned batch_size;
 
-	// understood varibles
+    // understood varibles
 	const unsigned train_data_num;
 	const unsigned test_data_num;
 	const unsigned input_size;
 	const unsigned convolutional_layer_num;
 
-
-	// host data
+    // host data
 	std::vector<std::vector<float>>& train_data;
 	std::vector<unsigned>& train_labels;
 	std::vector<std::vector<float>>& test_data;
 	std::vector<unsigned>& test_labels;
 
-	// device data ptrs
+    // device data ptrs
 	float* dev_train_data{ nullptr };
 	unsigned* dev_train_labels{ nullptr };
 	float* dev_test_data{ nullptr };
 	unsigned* dev_test_labels{ nullptr };
 
-	// vector of the Convolutional Layers
-	std::vector<ConvolutionalLayer> conv_layers;
-	std::vector<PoolingLayer> pooling_layers;
-
-	// FullyConnected
-	FullyConnected fc;
-
-	// softmaxLayer
-	SoftmaxLayer softmax_layer;
-};
+    // define layers
+    ConvolutionalLayer conv1 = NULL;
+    PoolingLayer pool1 = NULL;
+    ConvolutionalLayer conv2 = NULL;
+    PoolingLayer pool2 = NULL;
+    FullyConnected fc;
+    SoftmaxLayer softmax_layer;
+}

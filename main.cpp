@@ -13,6 +13,7 @@
 #include "layer/cnn.hpp"
 #include "utils/helper.cuh"
 #include "utils/helper_host.hpp"
+#include "layer/vgg.hpp"
 
 cudnnHandle_t cudnn; // global cudnn Handle
 cublasHandle_t cublas; // global cublas Handle
@@ -65,7 +66,22 @@ int main(){
 	unsigned const channel_num = 3;
 
 	// initing cnn object & allocating needed memories on the gpu and randomizing weights and biases...
-	CNN cnn(
+	// CNN cnn(
+	// 	train_data,
+	// 	train_labels,
+	// 	test_data,
+	// 	test_labels,
+	// 	class_num,
+	// 	channel_num,
+	// 	imageX, imageY,
+	// 	kernel_nums,
+	// 	kernel_sizes,
+	// 	strides,
+	// 	neuron_nums,
+	// 	batch_size
+	// );
+
+	VGG vgg(
 		train_data,
 		train_labels,
 		test_data,
@@ -81,7 +97,8 @@ int main(){
 	);
 
 	// Training Network for some number of epochs
-	cnn.train(10000);
+	// cnn.train(10000);
+	vgg.train(10000);
 
 	std::cout << "Press Enter to continue...\n";
 	std::cin.get();

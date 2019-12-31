@@ -17,6 +17,7 @@ public:
 		int _activation_func
 	);
 	~ConvolutionalLayer();
+	cudnnTensorDescriptor_t y_desc;
 
 	void setX(float* new_x);
 
@@ -68,6 +69,6 @@ private:
 	cudnnFilterDescriptor_t w_desc;
 	cudnnTensorDescriptor_t b_desc;
 	cudnnConvolutionDescriptor_t conv_desc;
-	cudnnTensorDescriptor_t y_desc;
+	
 };
 
