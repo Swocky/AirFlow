@@ -4,13 +4,15 @@
 
 class PoolingLayer{
 public:
-    void init(
-        unsigned const _pooling_size,
-        unsigned const _input_num,
-		float* _x,
-        float* _p_gradient,
-		unsigned const _batch_size
-    );
+    void init(cudnnTensorDescriptor_t _x_desc,
+                        float* _x,
+                        unsigned x_height,
+                        unsigned x_width,
+                        unsigned _pooling_size,
+                        unsigned _pooling_stride,
+                        unsigned _pooling_type,
+                        unsigned _channel_num,
+                        unsigned _batch_size);
 
     PoolingLayer();
     ~PoolingLayer();
@@ -18,14 +20,19 @@ public:
 	void feedForward();
 	void backprop();
 
-	unsigned const pooling_size;
-    unsigned const batch_size;
-    float* y{ nullptr };
-	float* gradient{ nullptr };
-	float* p_gradient{ nullptr };
+    cudnnTensorDescriptor_t y_desc;
+    cudnnPoolingDescriptor_t pooling_desc;
+    float* gradient{nullptr};
+    float* last_gradient{nullptr};
 
 private:
-	float* x{ nullptr };
-	cudnnTensorDescriptor_t y_desc;
+    float* x{nullptr};
+    cudnnTensorDescriptor_t x_desc;
+    unsigned channel_num;
     unsigned batch_size;
+    unsigned pooling_size;
+    unsigned pooling_stride;
+    unsigned pooling_type;
+    unsigned y_height;
+    unsigned y_width;
 }
