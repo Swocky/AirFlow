@@ -11,7 +11,7 @@ void printArrayAPI(float* arr, unsigned n){
 // the kernel function of computing back propagation in Softmax layer
 __global__ void softmaxLossBackprop(
 	const float* result, float* error,
-	unsigned const class_count, unsigned const batch_size,
+	unsigned const class_num, unsigned const batch_size,
 	const unsigned* label_ptr){
 	unsigned idx = blockIdx.x * blockDim.x + threadIdx.x;
     // using one single line to avoid the divergence
@@ -21,9 +21,9 @@ __global__ void softmaxLossBackprop(
 // the utils function of computing back propagation in Softmax layer
 void softmaxLossBackpropAPI(
 	const float* result, float* error,
-	unsigned const class_count, unsigned const batch_size,
+	unsigned const class_num, unsigned const batch_size,
 	const unsigned* label_ptr){
-	SoftmaxLossBackprop << < batch_size, class_count >> > (result, error, class_count, batch_size, label_ptr);
+	softmaxLossBackprop << < batch_size, class_num >> > (result, error, class_num, batch_size, label_ptr);
 	cudaDeviceSynchronize();
 }
 

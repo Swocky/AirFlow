@@ -1,42 +1,42 @@
 #include "fc_layer.hpp"
 
 void FullyConnectedLayer::init(
-	unsigned const _neuron_count,
-	unsigned const _input_count,
+	unsigned const _neuron_num,
+	unsigned const _input_num,
 	float* _x,
 	float* _p_gradient,
 	unsigned const _batch_size
 ){
-	neuron_count = _neuron_count;
-	input_count = _input_count;
+	neuron_num = _neuron_num;
+	input_num = _input_num;
 	x =_x;
 	p_gradient = _p_gradient;
 	batch_size =_batch_size;
-	std::cout << "input_count: " << input_count << '\n';
-	std::cout << "neuron_count: " << neuron_count << '\n';
-	std::cout << "batch_size: " << batch_size << '\n';
+	// std::cout << "input num: " << input_num << '\n';
+	// std::cout << "neuron num: " << neuron_num << '\n';
+	// std::cout << "batch_size: " << batch_size << '\n';
 	// allocating weights, 'w'
-	size_t const w_bytes = input_count * neuron_count * sizeof(float);
+	size_t const w_bytes = input_num * neuron_num * sizeof(float);
 	//std::cout << "Allocating: " << w_bytes / 1024.0f / 1024.0f << "Mb.\n";
 	checkCuda(cudaMalloc(&w, w_bytes));
 	randomize(w, w_bytes / sizeof(float), 0.03f);
 	// allocating biases, 'b' & creating and setting b_desc
-	size_t const b_bytes = neuron_count * sizeof(float);
+	size_t const b_bytes = neuron_num * sizeof(float);
 	checkCuda(cudaMalloc(&b, b_bytes));
-	randomize(b, neuron_count, 0.01f);
+	randomize(b, neuron_num, 0.01f);
 	checkCUDNN(cudnnCreateTensorDescriptor(&b_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
 		b_desc,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		1,
-		neuron_count,
+		neuron_num,
 		1, 1
 	));
 
 
 	// allocating output before relu, 'o' & relu, 'y' & creating and setting y_desc
-	size_t const y_bytes = neuron_count * batch_size * sizeof(float);
+	size_t const y_bytes = neuron_num * batch_size * sizeof(float);
 	checkCuda(cudaMalloc(&o, y_bytes));
 	checkCuda(cudaMalloc(&y, y_bytes));
 	checkCUDNN(cudnnCreateTensorDescriptor(&y_desc));
@@ -45,7 +45,7 @@ void FullyConnectedLayer::init(
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		batch_size,
-		neuron_count,
+		neuron_num,
 		1, 1
 	));
 
@@ -53,7 +53,7 @@ void FullyConnectedLayer::init(
 	checkCUDNN(cudnnCreateActivationDescriptor(&activation_desc));
 	checkCUDNN(cudnnSetActivationDescriptor(
 		activation_desc,
-		CUDNN_ACTIVATION_ELU,
+		CUDNN_ACTIVATION_RELU,
 		CUDNN_NOT_PROPAGATE_NAN,
 		1.0
 	));
@@ -74,17 +74,17 @@ FullyConnectedLayer::FullyConnectedLayer(){
 FullyConnectedLayer::~FullyConnectedLayer(){
 }
 
-void FullyConnectedLayer::FeedForward(){
+void FullyConnectedLayer::feedForward(){
 	const float alpha = 1.0f, beta = 0.0f;
 	// multiplying by weights, o = x*w;
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_N, CUBLAS_OP_N,
-		neuron_count, batch_size, input_count,
+		neuron_num, batch_size, input_num,
 		&alpha,
-		w, neuron_count,
-		x, input_count,
+		w, neuron_num,
+		x, input_num,
 		&beta,
-		o, neuron_count
+		o, neuron_num
 	);
 
 	// adding biases, o += b;
@@ -99,7 +99,7 @@ void FullyConnectedLayer::FeedForward(){
 	// relu
 	checkCUDNN(cudnnActivationForward(
 		cudnn,
-		activationDesc,
+		activation_desc,
 		&alpha,
 		y_desc, o,
 		&beta,
@@ -114,7 +114,7 @@ void FullyConnectedLayer::backprop()
 	// taking derivative of activation func.
 	checkCUDNN(cudnnActivationBackward(
 		cudnn,
-		activationDesc,
+		activation_desc,
 		&alpha,
 		y_desc, y,
 		y_desc, gradient,
@@ -126,32 +126,32 @@ void FullyConnectedLayer::backprop()
 	// passing gradient to previous layer
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_T, CUBLAS_OP_N,
-		input_count, batch_size, neuron_count,
+		input_num, batch_size, neuron_num,
 		&alpha,
-		w, neuron_count,
-		gradient, neuron_count,
+		w, neuron_num,
+		gradient, neuron_num,
 		&beta,
-		p_gradient, input_count
+		p_gradient, input_num
 	);
 	// updating weights, 'w'
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_N, CUBLAS_OP_T,
-		neuron_count, input_count, batch_size,
+		neuron_num, input_num, batch_size,
 		&learning_rate,
-		gradient, neuron_count,
-		x, input_count,
+		gradient, neuron_num,
+		x, input_num,
 		&alpha,
-		w, neuron_count
+		w, neuron_num
 	);
 
 	// updating biases, 'b'
 	cublasSgemm_v2(
 		cublas, CUBLAS_OP_N, CUBLAS_OP_N,
-		neuron_count, 1, batch_size,
+		neuron_num, 1, batch_size,
 		&learning_rate,
-		gradient, neuron_count,
+		gradient, neuron_num,
 		onevec, batch_size,
 		&alpha,
-		b, neuron_count
+		b, neuron_num
 	);
 }

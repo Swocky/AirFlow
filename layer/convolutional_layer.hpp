@@ -1,19 +1,20 @@
 #pragma once
 #include "../utils/helper.cuh"
-#include "../utils/helper_host.h"
+#include "../utils/helper_host.hpp"
 
 class ConvolutionalLayer{
 public:
 	ConvolutionalLayer(
-		unsigned const _kernel_count,
+		unsigned const _kernel_num,
 		unsigned const _kernel_size,
 		unsigned const _stride,
-		unsigned const _channel_count,
+		unsigned const _channel_num,
 		unsigned const _input_x,
 		unsigned const _input_y,
 		float* x,
 		float* _p_gradient,
-		unsigned const _batch_size
+		unsigned const _batch_size,
+		int _activation_func
 	);
 	~ConvolutionalLayer();
 
@@ -37,10 +38,10 @@ public:
 private:
 	// defining vars of the convolution layer
 	// there is no padding for now
-	unsigned const kernel_count;
+	unsigned const kernel_num;
 	unsigned const kernel_size;
 	unsigned const stride;
-	unsigned const channel_count;
+	unsigned const channel_num;
 	unsigned const input_x, input_y;
 	unsigned const batch_size;
 

@@ -33,9 +33,9 @@ extern float learning_rate;
 {																	\
 	cudaError_t err = (expression);									\
 	if (err != cudaSuccess) {										\
-		cerr << "Cuda Error on file " << __FILE__				\
+		std::cerr << "Cuda Error on file " << __FILE__				\
 				  << " on line: " << __LINE__ << ' '				\
-				  << cudaGetErrorString(err) << endl;				\
+				  << cudaGetErrorString(err) << std::endl;				\
 	}																\
  }
 

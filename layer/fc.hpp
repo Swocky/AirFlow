@@ -1,5 +1,5 @@
 #pragma once
-#include "../utils/helper_host.h"
+#include "../utils/helper_host.hpp"
 #include "fc_layer.hpp"
 
 class FullyConnected{
@@ -8,8 +8,8 @@ public:
 	~FullyConnected();
 
 	void init(
-		const std::vector<unsigned> _neuron_counts,
-		const unsigned _input_count,
+		const std::vector<unsigned> _neuron_nums,
+		const unsigned _input_num,
 		float* _x,
 		float* _p_gradient,
 		const unsigned _batch_size
@@ -26,8 +26,8 @@ public:
 
 private:
 	// defining vars of the fully connected
-	std::vector<unsigned> neuron_counts;
-	unsigned input_count = 0;
+	std::vector<unsigned> neuron_nums;
+	unsigned input_num = 0;
 	float* x{ nullptr }; // output of the convolution layers, device ptr
 	unsigned batch_size = 0;
 

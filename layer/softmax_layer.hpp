@@ -1,11 +1,11 @@
 #pragma once
-#include "../utils/helper_host.h"
+#include "../utils/helper_host.hpp"
 
 class SoftmaxLayer{
 public:
 	void init(
-		unsigned const _class_count,
-		unsigned const _input_count,
+		unsigned const _class_num,
+		unsigned const _input_num,
 		float* _x,
 		float* _p_gradient,
 		unsigned const _batch_size
@@ -17,8 +17,8 @@ public:
 	void backprop();
 
 	// public members
-	unsigned class_count;
-	unsigned input_count;
+	unsigned class_num;
+	unsigned input_num;
 	float* y{ nullptr };
 	float* gradient{ nullptr };
 	float* p_gradient{ nullptr };

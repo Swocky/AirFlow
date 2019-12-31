@@ -1,28 +1,31 @@
-#include "convolution_layer.hpp"
+#include "convolutional_layer.hpp"
 
 // convlutional layer constructor
 ConvolutionalLayer::ConvolutionalLayer(
-	unsigned const _kernel_count, 
+	unsigned const _kernel_num, 
 	unsigned const _kernel_size,
 	unsigned const _stride,
-	unsigned const _channel_count,
+	unsigned const _channel_num,
 	unsigned const _input_x,
 	unsigned const _input_y,
 	float* _x,
 	float* _p_gradient,
-	unsigned const _batch_size
+	unsigned const _batch_size,
+	int _activation_func
 ) :
-	kernel_count(_kernel_count),
+	kernel_num(_kernel_num),
 	kernel_size(_kernel_size),
 	stride(_stride),
-	channel_count(_channel_count),
+	channel_num(_channel_num),
 	input_x(_input_x),
 	input_y(_input_y),
 	x(_x),
 	p_gradient(_p_gradient),
 	output_x((_input_x - _kernel_size) / _stride + 1),
 	output_y((_input_y - _kernel_size) / _stride + 1),
-	batch_size(_batch_size){
+	batch_size(_batch_size),
+	activation_func(_activation_func)
+	{
 	// creating & setting data descriptor 'x_desc'
 	checkCUDNN(cudnnCreateTensorDescriptor(&x_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
@@ -30,46 +33,46 @@ ConvolutionalLayer::ConvolutionalLayer(
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		batch_size,
-		channel_count,
+		channel_num,
 		input_y,
 		input_x
 	));
 
 
 	// allocating weights 'w'
-	size_t const w_bytes = kernel_count * pow(kernel_size, 2) * channel_count * sizeof(float);
+	size_t const w_bytes = kernel_num * pow(kernel_size, 2) * channel_num * sizeof(float);
 	checkCuda(cudaMalloc(&w, w_bytes));
 	// randomizing weights 'w'
-	Randomize(w, w_bytes / sizeof(float), 0.03f);
+	randomize(w, w_bytes / sizeof(float), 0.03f);
 	// creating & setting filter descriptions for weights 'w_desc'
 	checkCUDNN(cudnnCreateFilterDescriptor(&w_desc));
 	checkCUDNN(cudnnSetFilter4dDescriptor(
 		w_desc,
 		CUDNN_DATA_FLOAT,
 		CUDNN_TENSOR_NCHW,
-		kernel_count,
-		channel_count,
+		kernel_num,
+		channel_num,
 		kernel_size, kernel_size
 	));
 
 
 	// allocating biases 'b'
-	size_t const b_bytes = kernel_count * sizeof(float);
+	size_t const b_bytes = kernel_num * sizeof(float);
 	checkCuda(cudaMalloc(&b, b_bytes), 0.01f);
 	// randomizing biases 'b'
-	Randomize(b, b_bytes / sizeof(float));
+	randomize(b, b_bytes / sizeof(float));
 	// creating & setting tensor descriptions for biases 'b_desc'
 	checkCUDNN(cudnnCreateTensorDescriptor(&b_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
 		b_desc,
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
-		1, kernel_count, 1, 1
+		1, kernel_num, 1, 1
 	));
 
 
 	// allocating for output before the relu 'o' & after relu 'y'
-	size_t const y_bytes = batch_size * kernel_count * outputY * outputX * sizeof(float);
+	size_t const y_bytes = batch_size * kernel_num * output_y * output_x * sizeof(float);
 	checkCuda(cudaMalloc(&o, y_bytes));
 	checkCuda(cudaMalloc(&y, y_bytes));
 	// creating & setting tensor descriptions for 'o' & 'y'
@@ -79,20 +82,20 @@ ConvolutionalLayer::ConvolutionalLayer(
 		CUDNN_TENSOR_NCHW,
 		CUDNN_DATA_FLOAT,
 		batch_size,
-		kernel_count,
-		outputY, outputX
+		kernel_num,
+		output_y, output_x
 	));
 
 
 	// allocating gradients 'gradient', it's size is the same y, and when gradient description is required, y_desc can be used
-	size_t const gradient_bytes = batch_size * kernel_count * outputY * outputX * sizeof(float);
+	size_t const gradient_bytes = batch_size * kernel_num * output_y * output_x * sizeof(float);
 	checkCuda(cudaMalloc(&gradient, gradient_bytes));
 
 	// creating & setting activation for the layers, relu is used
 	checkCUDNN(cudnnCreateActivationDescriptor(&activationDesc));
 	checkCUDNN(cudnnSetActivationDescriptor(
 		activationDesc,
-		CUDNN_ACTIVATION_ELU,
+		activation_func,
 		CUDNN_NOT_PROPAGATE_NAN,
 		1.0
 	));
