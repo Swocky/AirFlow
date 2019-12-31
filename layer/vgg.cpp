@@ -87,7 +87,7 @@ VGG::VGG(
 	size_t const dummy_gradient_bytes = batch_size * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dummy_gradient, dummy_gradient_bytes));
 
-    conv1 = ConvolutionalLayer(
+    conv1.init(
 				kernel_nums[0],
 				kernel_sizes[0],
 				strides[0],
@@ -95,22 +95,21 @@ VGG::VGG(
 				image_x, image_y,
 				dev_train_data,
 				dummy_gradient,
-				batch_size, CUDNN_ACTIVATION_RELU);
-    
-    pool1 = PoolingLayer();
+				batch_size);
+
 	pool1.init(
 		conv1.y_desc,
 		conv1.y,
 		conv1.output_x,
-		conv1,output_y,
+		conv1.output_y,
 		2,
 		1,
-		NULL, // polling_type
 		channel_num, // 这里可能有问题
 		batch_size,
+		conv1.gradient
 	);
 
-	conv2 = ConvolutionalLayer(
+	conv2.init(
 			kernel_nums[1],
 			kernel_sizes[1],
 			strides[1],
@@ -118,18 +117,18 @@ VGG::VGG(
 			pool1.y_height, pool1.y_width,
 			pool1.y,
 			pool1.gradient,
-			batch_size, CUDNN_ACTIVATION_RELU);
-	pool2 = PoolingLayer();
+			batch_size);
+
 	pool2.init(
 		conv2.y_desc,
 		conv2.y,
 		conv2.output_x,
-		conv2,output_y,
+		conv2.output_y,
 		2,
 		1,
-		NULL, // polling_type
 		channel_num, // 这里可能有问题
 		batch_size,
+		conv2.gradient
 	);
 
 	// init FullyConnected class object, which will use
@@ -137,9 +136,9 @@ VGG::VGG(
 	// neurons in LeNet
 	fc.init(
 		neuron_nums,
-		conv_layers.back().output_x * conv_layers.back().output_y * kernel_nums.back(),
-		conv_layers.back().y,
-		conv_layers.back().gradient,
+		conv2.output_x * conv2.output_y * kernel_nums[1],
+		conv2.y,
+		conv2.gradient,
 		batch_size);
 
 	// init the last layer of the network which is softmax
@@ -166,7 +165,7 @@ void VGG::train(unsigned const epoch){
 			batch++;
 			int error_num = 0;
 			// set x for the network's input
-			conv1.setX(dev_train_data + i * input_size)
+			conv1.setX(dev_train_data + i * input_size);
 			// adjust pointer for the inputs' labels
 			label_ptr = dev_train_labels + i;
 

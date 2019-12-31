@@ -70,10 +70,10 @@ private:
 	unsigned* dev_test_labels{ nullptr };
 
     // define layers
-    ConvolutionalLayer conv1 = NULL;
-    PoolingLayer pool1 = NULL;
-    ConvolutionalLayer conv2 = NULL;
-    PoolingLayer pool2 = NULL;
+    ConvolutionalLayer conv1;
+    PoolingLayer pool1;
+    ConvolutionalLayer conv2;
+    PoolingLayer pool2;
     FullyConnected fc;
     SoftmaxLayer softmax_layer;
-}
+};
