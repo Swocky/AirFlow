@@ -63,6 +63,6 @@ extern void readArrayAPI(float* arr, unsigned const n);
 
 // adjust learning_rate
 inline void updateLR(float* learning_rate, unsigned const batch_size){
-	*learning_rate = 0.001
+	*learning_rate = 0.001;
 	*learning_rate /= batch_size;
 }

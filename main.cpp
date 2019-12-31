@@ -8,8 +8,8 @@
 #include <ctime>
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-#include "ReadCifar10.hpp"
-#include "ConvolutionalLayer.hpp"
+#include "utils/cifar10_reader.hpp"
+#include "layer/convolutional_layer.hpp"
 #include "layer/cnn.hpp"
 #include "utils/helper.cuh"
 #include "utils/helper_host.h"
