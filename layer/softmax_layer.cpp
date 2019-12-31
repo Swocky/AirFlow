@@ -66,7 +66,7 @@ SoftmaxLayer::~SoftmaxLayer(){
 	checkCUDNN(cudnnDestroyTensorDescriptor(b_desc));*/
 }
 
-void SoftmaxLayer::feedForward()
+void SoftmaxLayer::forward()
 {
 	const float alpha = 1.0f, beta = 0.0f;
 

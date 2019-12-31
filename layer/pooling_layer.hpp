@@ -19,13 +19,13 @@ public:
     PoolingLayer();
     ~PoolingLayer();
 
-	void feedForward();
+	void forward();
 	void backprop();
 
     cudnnTensorDescriptor_t y_desc;
     cudnnPoolingDescriptor_t pooling_desc;
     float* gradient{nullptr};
-    float* last_gradient{nullptr};
+    float* next_gradient{nullptr};
 
 private:
     float* x{nullptr};

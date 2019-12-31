@@ -170,16 +170,16 @@ void VGG::train(unsigned const epoch){
 			label_ptr = dev_train_labels + i;
 
 			// manually forwarding ConvolutionLayer class objects
-			conv1.convolutionForward();
-			pool1.feedForward();
-			conv2.convolutionForward();
-			pool2.feedForward();
+			conv1.forward();
+			pool1.forward();
+			conv2.forward();
+			pool2.forward();
 			// manually forwarding FullyConnected class which
 			// forwards individual layers
 			fc.forward();
 			// manually forwarding softmax_layer to achiev
 			// network's answers...
-			softmax_layer.feedForward();
+			softmax_layer.forward();
 
 			// can be commented out if training error rate is
 			// not wanted, lowers performance when enabled...
@@ -209,9 +209,9 @@ void VGG::train(unsigned const epoch){
 			softmax_layer.backprop();
 			fc.backprop();
 			pool2.backprop();
-			conv2.convolutionBackward();
+			conv2.backprop();
 			pool1.backprop();
-			conv1.convolutionBackward();
+			conv1.backprop();
 		}
 
 		float acc = test();
@@ -236,13 +236,13 @@ float VGG::test()
 		conv1.setX(dev_test_data + i * input_size);
 		label_ptr = dev_test_labels + i;
 
-		conv1.convolutionForward();
-		pool1.feedForward();
-		conv2.convolutionForward();
-		pool2.feedForward();
+		conv1.forward();
+		pool1.forward();
+		conv2.forward();
+		pool2.forward();
 
 		fc.forward();
-		softmax_layer.feedForward();
+		softmax_layer.forward();
 		for (unsigned j = 0; j != batch_size; j++)
 		{
 			int result = 0;

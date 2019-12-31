@@ -20,8 +20,8 @@ public:
 
 	void setX(float* new_x);
 
-	void convolutionForward();
-	void convolutionBackward();
+	void forward();
+	void backprop();
 
 	// understood varibles
 	unsigned output_x, output_y;

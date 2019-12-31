@@ -10,7 +10,7 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
                         unsigned _pooling_stride,
                         unsigned _channel_num,
                         unsigned _batch_size,
-                        float* _last_gradient) {
+                        float* _next_gradient) {
     x_desc = _x_desc;
     x = _x;
     pooling_size = _pooling_size;
@@ -19,7 +19,7 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
     channel_num = _channel_num;
     y_height = x_height / pooling_stride;
     y_width = x_width / pooling_stride;
-    last_gradient = _last_gradient;
+	next_gradient = _next_gradient;
 
     checkCUDNN(cudnnCreateTensorDescriptor(&y_desc));
     checkCUDNN(cudnnSetTensor4dDescriptor(y_desc,
@@ -48,7 +48,7 @@ PoolingLayer::~PoolingLayer(){
 	cudnnDestroyPoolingDescriptor(pooling_desc);
 }
 
-void PoolingLayer::feedForward() {
+void PoolingLayer::forward() {
     const float alpha = 1.0f, beta = 0.0f;
     cudnnPoolingForward(
         cudnn,
@@ -68,7 +68,7 @@ void PoolingLayer::backprop() {
         pooling_desc,
         &alpha,
         y_desc, y,
-        y_desc, last_gradient,
+        y_desc, next_gradient,
         x_desc, x,
         &beta,
         x_desc,

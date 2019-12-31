@@ -193,7 +193,7 @@ ConvolutionalLayer::~ConvolutionalLayer(){
 
 void ConvolutionalLayer::setX(float* new_x) { x = new_x; }
 
-void ConvolutionalLayer::convolutionForward()
+void ConvolutionalLayer::forward()
 {
 	const float alpha = 1.0f, beta = 0.0f;
 
@@ -232,7 +232,7 @@ void ConvolutionalLayer::convolutionForward()
 
 }
 
-void ConvolutionalLayer::convolutionBackward()
+void ConvolutionalLayer::backprop()
 {
 	// used SGD momentum to update weights
 	// if wanted to use only sgd, change momentum_b with beta, momentum_g with alpha 
