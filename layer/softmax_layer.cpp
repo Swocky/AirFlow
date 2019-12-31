@@ -18,7 +18,6 @@ void SoftmaxLayer::init(unsigned const _class_num,
 	checkCuda(cudaMalloc(&w, w_bytes));
 	randomize(w, w_bytes / sizeof(float), 0.04f);
 
-
 	// allocating biases, 'b' & creating and setting b_desc
 	size_t const b_bytes = class_num * sizeof(float);
 	checkCuda(cudaMalloc(&b, b_bytes));

@@ -10,7 +10,8 @@ ConvolutionalLayer::ConvolutionalLayer(
 	unsigned const _input_y,
 	float* _x,
 	float* _p_gradient,
-	unsigned const _batch_size
+	unsigned const _batch_size,
+	int _activation_func
 ) :
 	kernel_num(_kernel_num),
 	kernel_size(_kernel_size),
@@ -22,7 +23,9 @@ ConvolutionalLayer::ConvolutionalLayer(
 	p_gradient(_p_gradient),
 	output_x((_input_x - _kernel_size) / _stride + 1),
 	output_y((_input_y - _kernel_size) / _stride + 1),
-	batch_size(_batch_size){
+	batch_size(_batch_size),
+	activation_func(_activation_func)
+	{
 	// creating & setting data descriptor 'x_desc'
 	checkCUDNN(cudnnCreateTensorDescriptor(&x_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
@@ -92,7 +95,7 @@ ConvolutionalLayer::ConvolutionalLayer(
 	checkCUDNN(cudnnCreateActivationDescriptor(&activationDesc));
 	checkCUDNN(cudnnSetActivationDescriptor(
 		activationDesc,
-		CUDNN_ACTIVATION_ELU,
+		activation_func,
 		CUDNN_NOT_PROPAGATE_NAN,
 		1.0
 	));

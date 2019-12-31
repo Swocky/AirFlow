@@ -13,7 +13,8 @@ public:
 		unsigned const _input_y,
 		float* x,
 		float* _p_gradient,
-		unsigned const _batch_size
+		unsigned const _batch_size,
+		int _activation_func
 	);
 	~ConvolutionalLayer();
 

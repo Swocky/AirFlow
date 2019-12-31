@@ -114,7 +114,7 @@ CNN::CNN(
 				conv_layers.back().output_y,
 				conv_layers.back().y,
 				conv_layers.back().gradient,
-				batch_size));
+				batch_size,CUDNN_ACTIVATION_RELU));
 		}
 	}
 
