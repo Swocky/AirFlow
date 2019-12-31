@@ -84,6 +84,7 @@ CNN::CNN(
 	size_t const dummy_gradient_bytes = batch_size * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dummy_gradient, dummy_gradient_bytes));
 	// setting up the convolutional layers
+	
 	for (unsigned i = 0; i != convolutional_layer_num; i++)
 	{
 		if (i == 0)

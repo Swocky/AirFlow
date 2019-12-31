@@ -26,6 +26,7 @@ public:
 
 private:
 	float* x{ nullptr };
+
 	cudnnTensorDescriptor_t y_desc;
     unsigned batch_size;
 }
