@@ -15,7 +15,7 @@
 #include "../utils/helper.cuh"
 #include "../utils/helper_host.hpp"
 #include "softmax_layer.hpp"
-#include "pooling_layer.hpp"
+
 
 class CNN 
 {
@@ -73,7 +73,6 @@ private:
 
 	// vector of the Convolutional Layers
 	std::vector<ConvolutionalLayer> conv_layers;
-	std::vector<PoolingLayer> pooling_layers;
 
 	// FullyConnected
 	FullyConnected fc;

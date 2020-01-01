@@ -4,7 +4,7 @@
 
 class ConvolutionalLayer{
 public:
-	ConvolutionalLayer(
+	void init(
 		unsigned const _kernel_num,
 		unsigned const _kernel_size,
 		unsigned const _stride,
@@ -13,19 +13,18 @@ public:
 		unsigned const _input_y,
 		float* x,
 		float* _p_gradient,
-		unsigned const _batch_size,
-		int _activation_func
+		unsigned const _batch_size
 	);
 	~ConvolutionalLayer();
 	cudnnTensorDescriptor_t y_desc;
 
 	void setX(float* new_x);
 
-	void convolutionForward();
-	void convolutionBackward();
+	void forward();
+	void backprop();
 
 	// understood varibles
-	const unsigned output_x, output_y;
+	unsigned output_x, output_y;
 
 	float* y{ nullptr }; // output after relu, y = RELU(o); for relu cudnnActivationForward is used
 	float* gradient{ nullptr }; // gradient is the error of every 'y'. So it's size is the same as 'y' or 'o'.
@@ -39,13 +38,12 @@ public:
 private:
 	// defining vars of the convolution layer
 	// there is no padding for now
-	unsigned const kernel_num;
-	unsigned const kernel_size;
-	unsigned const stride;
-	unsigned const channel_num;
-	unsigned const input_x, input_y;
-	unsigned const batch_size;
-
+	unsigned  kernel_num;
+	unsigned  kernel_size;
+	unsigned  stride;
+	unsigned  channel_num;
+	unsigned  input_x, input_y;
+	unsigned  batch_size;
 
 
 	cudnnConvolutionFwdAlgo_t fwd_algo; // algorithm for forward propagation, used in the cudnnConvolutionForward func.

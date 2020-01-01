@@ -1,7 +1,7 @@
 #include "convolutional_layer.hpp"
 
 // convlutional layer constructor
-ConvolutionalLayer::ConvolutionalLayer(
+void ConvolutionalLayer::init(
 	unsigned const _kernel_num, 
 	unsigned const _kernel_size,
 	unsigned const _stride,
@@ -10,22 +10,19 @@ ConvolutionalLayer::ConvolutionalLayer(
 	unsigned const _input_y,
 	float* _x,
 	float* _p_gradient,
-	unsigned const _batch_size,
-	int _activation_func
-) :
-	kernel_num(_kernel_num),
-	kernel_size(_kernel_size),
-	stride(_stride),
-	channel_num(_channel_num),
-	input_x(_input_x),
-	input_y(_input_y),
-	x(_x),
-	p_gradient(_p_gradient),
-	output_x((_input_x - _kernel_size) / _stride + 1),
-	output_y((_input_y - _kernel_size) / _stride + 1),
-	batch_size(_batch_size),
-	activation_func(_activation_func)
-	{
+	unsigned const _batch_size
+) {
+	kernel_num = _kernel_num;
+	kernel_size = _kernel_size;
+	stride = _stride;
+	channel_num = _channel_num;
+	input_x =_input_x;
+	input_y = _input_y;
+	x = _x;
+	p_gradient = _p_gradient;
+	output_x = (_input_x - _kernel_size) / _stride + 1;
+	output_y = (_input_y - _kernel_size) / _stride + 1;
+	batch_size = _batch_size;
 	// creating & setting data descriptor 'x_desc'
 	checkCUDNN(cudnnCreateTensorDescriptor(&x_desc));
 	checkCUDNN(cudnnSetTensor4dDescriptor(
@@ -95,7 +92,7 @@ ConvolutionalLayer::ConvolutionalLayer(
 	checkCUDNN(cudnnCreateActivationDescriptor(&activationDesc));
 	checkCUDNN(cudnnSetActivationDescriptor(
 		activationDesc,
-		activation_func,
+		CUDNN_ACTIVATION_RELU,
 		CUDNN_NOT_PROPAGATE_NAN,
 		1.0
 	));
@@ -196,7 +193,7 @@ ConvolutionalLayer::~ConvolutionalLayer(){
 
 void ConvolutionalLayer::setX(float* new_x) { x = new_x; }
 
-void ConvolutionalLayer::convolutionForward()
+void ConvolutionalLayer::forward()
 {
 	const float alpha = 1.0f, beta = 0.0f;
 
@@ -235,7 +232,7 @@ void ConvolutionalLayer::convolutionForward()
 
 }
 
-void ConvolutionalLayer::convolutionBackward()
+void ConvolutionalLayer::backprop()
 {
 	// used SGD momentum to update weights
 	// if wanted to use only sgd, change momentum_b with beta, momentum_g with alpha 

@@ -10,22 +10,22 @@ public:
                         unsigned x_width,
                         unsigned _pooling_size,
                         unsigned _pooling_stride,
-                        unsigned _pooling_type,
                         unsigned _channel_num,
-                        unsigned _batch_size);
+                        unsigned _batch_size,
+						float* _last_gradient);
     unsigned y_height;
     unsigned y_width;
     float* y;
     PoolingLayer();
     ~PoolingLayer();
 
-	void feedForward();
+	void forward();
 	void backprop();
 
     cudnnTensorDescriptor_t y_desc;
     cudnnPoolingDescriptor_t pooling_desc;
     float* gradient{nullptr};
-    float* last_gradient{nullptr};
+    float* next_gradient{nullptr};
 
 private:
     float* x{nullptr};
@@ -34,5 +34,4 @@ private:
     unsigned batch_size;
     unsigned pooling_size;
     unsigned pooling_stride;
-    unsigned pooling_type;
-}
+};

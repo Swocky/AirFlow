@@ -87,7 +87,7 @@ VGG::VGG(
 	size_t const dummy_gradient_bytes = batch_size * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dummy_gradient, dummy_gradient_bytes));
 
-    conv1 = ConvolutionalLayer(
+    conv1.init(
 				kernel_nums[0],
 				kernel_sizes[0],
 				strides[0],
@@ -95,22 +95,21 @@ VGG::VGG(
 				image_x, image_y,
 				dev_train_data,
 				dummy_gradient,
-				batch_size, CUDNN_ACTIVATION_RELU);
-    
-    pool1 = PoolingLayer();
+				batch_size);
+
 	pool1.init(
 		conv1.y_desc,
 		conv1.y,
 		conv1.output_x,
-		conv1,output_y,
+		conv1.output_y,
 		2,
 		1,
-		NULL, // polling_type
 		channel_num, // 这里可能有问题
 		batch_size,
+		conv1.gradient
 	);
 
-	conv2 = ConvolutionalLayer(
+	conv2.init(
 			kernel_nums[1],
 			kernel_sizes[1],
 			strides[1],
@@ -118,18 +117,18 @@ VGG::VGG(
 			pool1.y_height, pool1.y_width,
 			pool1.y,
 			pool1.gradient,
-			batch_size, CUDNN_ACTIVATION_RELU);
-	pool2 = PoolingLayer();
+			batch_size);
+
 	pool2.init(
 		conv2.y_desc,
 		conv2.y,
 		conv2.output_x,
-		conv2,output_y,
+		conv2.output_y,
 		2,
 		1,
-		NULL, // polling_type
 		channel_num, // 这里可能有问题
 		batch_size,
+		conv2.gradient
 	);
 
 	// init FullyConnected class object, which will use
@@ -137,9 +136,9 @@ VGG::VGG(
 	// neurons in LeNet
 	fc.init(
 		neuron_nums,
-		pool2.y_height * pool2.y_width * channel_num, // 这里可能有问题
-		pool2.y,
-		pool2.gradient,
+		convs.back().output_x * convs.back().output_y * kernel_nums[kernel_nums.size() - 1],
+		convs.back().y,
+		convs.back().gradient,
 		batch_size);
 
 	// init the last layer of the network which is softmax
@@ -166,21 +165,21 @@ void VGG::train(unsigned const epoch){
 			batch++;
 			int error_num = 0;
 			// set x for the network's input
-			conv1.setX(dev_train_data + i * input_size)
+			conv1.setX(dev_train_data + i * input_size);
 			// adjust pointer for the inputs' labels
 			label_ptr = dev_train_labels + i;
 
 			// manually forwarding ConvolutionLayer class objects
-			conv1.convolutionForward();
-			pool1.feedForward();
-			conv2.convolutionForward();
-			pool2.feedForward();
+			conv1.forward();
+			pool1.forward();
+			conv2.forward();
+			pool2.forward();
 			// manually forwarding FullyConnected class which
 			// forwards individual layers
 			fc.forward();
 			// manually forwarding softmax_layer to achiev
 			// network's answers...
-			softmax_layer.feedForward();
+			softmax_layer.forward();
 
 			// can be commented out if training error rate is
 			// not wanted, lowers performance when enabled...
@@ -210,9 +209,9 @@ void VGG::train(unsigned const epoch){
 			softmax_layer.backprop();
 			fc.backprop();
 			pool2.backprop();
-			conv2.convolutionBackward();
+			conv2.backprop();
 			pool1.backprop();
-			conv1.convolutionBackward();
+			conv1.backprop();
 		}
 
 		float acc = test();
@@ -237,13 +236,13 @@ float VGG::test()
 		conv1.setX(dev_test_data + i * input_size);
 		label_ptr = dev_test_labels + i;
 
-		conv1.convolutionForward();
-		pool1.feedForward();
-		conv2.convolutionForward();
-		pool2.feedForward();
+		conv1.forward();
+		pool1.forward();
+		conv2.forward();
+		pool2.forward();
 
 		fc.forward();
-		softmax_layer.feedForward();
+		softmax_layer.forward();
 		for (unsigned j = 0; j != batch_size; j++)
 		{
 			int result = 0;

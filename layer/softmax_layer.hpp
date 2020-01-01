@@ -13,7 +13,7 @@ public:
 	SoftmaxLayer();
 	~SoftmaxLayer();
 
-	void feedForward();
+	void forward();
 	void backprop();
 
 	// public members
