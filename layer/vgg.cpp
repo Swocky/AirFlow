@@ -175,6 +175,7 @@ void VGG::train(unsigned const epoch) {
 			//pool1.forward();
 			conv2.forward();
 			pool2.forward();
+
 			// manually forwarding FullyConnected class which
 			// forwards individual layers
 			fc.forward();

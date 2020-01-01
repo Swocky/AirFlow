@@ -17,7 +17,7 @@ public:
 
     unsigned y_height;
 	unsigned y_width;
-    float* y;
+    float* y{ nullptr };
     PoolingLayer();
     ~PoolingLayer();
 

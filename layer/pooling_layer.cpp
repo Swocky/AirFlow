@@ -42,6 +42,8 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
 
 	checkCuda(cudaMalloc(
         &gradient, sizeof(float)*batch_size*channel_num*y_height*y_width));
+	checkCuda(cudaMalloc(
+		&y, sizeof(float)*batch_size*channel_num*y_height*y_width));
 }
 
 PoolingLayer::~PoolingLayer(){
