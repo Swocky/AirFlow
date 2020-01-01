@@ -14,7 +14,7 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
                         unsigned _batch_size) {
     x_desc = _x_desc;
     x = _x;
-	padding_size = _padding_size;
+	window_size = _window_size;
 	window_stride = _window_stride;
 	padding_size = _padding_size;
     batch_size = _batch_size;

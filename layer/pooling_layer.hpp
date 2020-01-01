@@ -16,7 +16,7 @@ public:
 						unsigned _batch_size);
 
     unsigned y_height;
-    unsigned y_width;
+	unsigned y_width;
     float* y;
     PoolingLayer();
     ~PoolingLayer();
@@ -32,9 +32,9 @@ public:
 private:
     float* x{nullptr};
     cudnnTensorDescriptor_t x_desc;
-    unsigned channel_num;
-    unsigned batch_size;
-    unsigned window_size;
-    unsigned window_stride;
+	unsigned channel_num;
+	unsigned batch_size;
+	unsigned window_size;
+	unsigned window_stride;
 	unsigned padding_size;
 };

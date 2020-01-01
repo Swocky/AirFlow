@@ -97,27 +97,27 @@ VGG::VGG(
 		dummy_gradient,
 		batch_size);
 
-	pool1.init(
-		conv1.y_desc,
-		conv1.y,
-		conv1.output_y,
-		conv1.output_x,
-		2,
-		2,
-		0,
-		kernel_nums[0],
-		conv1.gradient,
-		batch_size);
+	//pool1.init(
+	//	conv1.y_desc,
+	//	conv1.y,
+	//	conv1.output_y,
+	//	conv1.output_x,
+	//	2,
+	//	2,
+	//	0,
+	//	kernel_nums[0],
+	//	conv1.gradient,
+	//	batch_size);
 
 	conv2.init(
 		kernel_nums[1],
 		kernel_sizes[1],
 		strides[1],
 		kernel_nums[0],
-		pool1.y_height,
-		pool1.y_width,
-		pool1.y,
-		pool1.gradient,
+		conv1.output_y,
+		conv1.output_x,
+		conv1.y,
+		conv1.gradient,
 		batch_size);
 
 	pool2.init(
@@ -172,7 +172,7 @@ void VGG::train(unsigned const epoch) {
 
 			// manually forwarding ConvolutionLayer class objects
 			conv1.forward();
-			pool1.forward();
+			//pool1.forward();
 			conv2.forward();
 			pool2.forward();
 			// manually forwarding FullyConnected class which
@@ -211,7 +211,7 @@ void VGG::train(unsigned const epoch) {
 			fc.backprop();
 			pool2.backprop();
 			conv2.backprop();
-			pool1.backprop();
+			//pool1.backprop();
 			conv1.backprop();
 		}
 
@@ -238,7 +238,7 @@ float VGG::test()
 		label_ptr = dev_test_labels + i;
 
 		conv1.forward();
-		pool1.forward();
+		//pool1.forward();
 		conv2.forward();
 		pool2.forward();
 
