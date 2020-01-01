@@ -102,19 +102,19 @@ VGG::VGG(
 		conv1.y,
 		conv1.output_x,
 		conv1.output_y,
-		3,
-		1,
+		2,
+		2,
 		kernel_nums[0], // 这里可能有问题
 		conv1.gradient,
-		batch_size
-	);
+		batch_size);
 
 	conv2.init(
 			kernel_nums[1],
 			kernel_sizes[1],
 			strides[1],
 			kernel_nums[0],
-			pool1.y_height, pool1.y_width,
+			pool1.y_height,
+			pool1.y_width,
 			pool1.y,
 			pool1.gradient,
 			batch_size);
@@ -124,19 +124,18 @@ VGG::VGG(
 		conv2.y,
 		conv2.output_x,
 		conv2.output_y,
-		3,
-		1,
-		kernel_nums[1], // 这里可能有问题
+		2,
+		2,
+		kernel_nums[1], // pooling层的channel
 		conv2.gradient,
-		batch_size
-	);
+		batch_size);
 
 	// init FullyConnected class object, which will use
 	// FullyConnectedLayer class to represent fully connected
 	// neurons in LeNet
 	fc.init(
 		neuron_nums,
-		pool2.y_height * pool2.y_width * kernel_nums[1], // 这里可能有问题
+		pool2.y_height * pool2.y_width * kernel_nums[1],
 		pool2.y,
 		pool2.gradient,
 		batch_size);
