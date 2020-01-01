@@ -92,7 +92,7 @@ void ConvolutionalLayer::init(
 	checkCUDNN(cudnnCreateActivationDescriptor(&activationDesc));
 	checkCUDNN(cudnnSetActivationDescriptor(
 		activationDesc,
-		CUDNN_ACTIVATION_RELU,
+		CUDNN_ACTIVATION_ELU,
 		CUDNN_NOT_PROPAGATE_NAN,
 		1.0
 	));

@@ -1,21 +1,21 @@
 #include "vgg.hpp"
 
 VGG::VGG(
-    std::vector<std::vector<float>>& _train_data,
-    std::vector<unsigned>& _train_labels,
-    std::vector<std::vector<float>>& _test_data,
-    std::vector<unsigned>& _test_labels,
-    const unsigned _class_num,
-    const unsigned _channel_num,
-    const unsigned _image_x,
-    const unsigned _image_y,
-    std::vector<unsigned>& _kernel_nums,
-    std::vector<unsigned>& _kernel_sizes,
-    std::vector<unsigned>& _strides,
-    std::vector<unsigned>& _neuron_nums,
-    const unsigned _batch_size
+	std::vector<std::vector<float>>& _train_data,
+	std::vector<unsigned>& _train_labels,
+	std::vector<std::vector<float>>& _test_data,
+	std::vector<unsigned>& _test_labels,
+	const unsigned _class_num,
+	const unsigned _channel_num,
+	const unsigned _image_x,
+	const unsigned _image_y,
+	std::vector<unsigned>& _kernel_nums,
+	std::vector<unsigned>& _kernel_sizes,
+	std::vector<unsigned>& _strides,
+	std::vector<unsigned>& _neuron_nums,
+	const unsigned _batch_size
 ) :
-    train_data(_train_data),
+	train_data(_train_data),
 	train_labels(_train_labels),
 	test_data(_test_data),
 	test_labels(_test_labels),
@@ -33,11 +33,11 @@ VGG::VGG(
 	convolutional_layer_num(_kernel_nums.size()),
 	batch_size(_batch_size)
 {
-    // 固定VGG的conv层大小为2
-    // assert(kernel_nums.size() == kernel_sizes.size());
-    // assert(image_nums.size() == 2);
+	// 固定VGG的conv层大小为2
+	// assert(kernel_nums.size() == kernel_sizes.size());
+	// assert(image_nums.size() == 2);
 
-    // output parameters of the CNN
+	// output parameters of the CNN
 	std::cout << "VGG parameters------------------" << std::endl;
 	std::cout << "input size: " << input_size << std::endl;
 	std::cout << "batch size: " << batch_size << std::endl;
@@ -49,21 +49,21 @@ VGG::VGG(
 	std::cout << "class numbers: " << class_num << std::endl;
 	std::cout << "--------------------------------" << std::endl;
 
-    	// allocate and copy to dev_train_data
+	// allocate and copy to dev_train_data
 	size_t const train_data_bytes = train_data_num * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dev_train_data, train_data_bytes));
 	for (unsigned i = 0; i != train_data_num; i++)
 	{
 		checkCuda(cudaMemcpy(dev_train_data + i * input_size,
-							 train_data[i].data(), input_size * sizeof(float),
-							 cudaMemcpyHostToDevice));
+			train_data[i].data(), input_size * sizeof(float),
+			cudaMemcpyHostToDevice));
 	}
 
 	// allocate and copy to dev_train_labels
 	size_t const train_labels_bytes = train_data_num * sizeof(unsigned);
 	checkCuda(cudaMalloc(&dev_train_labels, train_labels_bytes));
 	checkCuda(cudaMemcpy(dev_train_labels, train_labels.data(),
-						 train_labels_bytes, cudaMemcpyHostToDevice));
+		train_labels_bytes, cudaMemcpyHostToDevice));
 
 	// allocate and copy to dev_test_data
 	size_t const test_data_bytes = test_data_num * input_size * sizeof(float);
@@ -71,37 +71,37 @@ VGG::VGG(
 	for (unsigned i = 0; i != test_data_num; i++)
 	{
 		checkCuda(cudaMemcpy(dev_test_data + i * input_size,
-							 test_data[i].data(),
-							 input_size * sizeof(float),
-							 cudaMemcpyHostToDevice));
+			test_data[i].data(),
+			input_size * sizeof(float),
+			cudaMemcpyHostToDevice));
 	}
 
 	// allocate and copy to dev_test_labels
 	size_t const test_labels_bytes = test_data_num * sizeof(unsigned);
 	checkCuda(cudaMalloc(&dev_test_labels, test_labels_bytes));
 	checkCuda(cudaMemcpy(dev_test_labels, test_labels.data(),
-						 test_labels_bytes,
-						 cudaMemcpyHostToDevice));
+		test_labels_bytes,
+		cudaMemcpyHostToDevice));
 
-	float *dummy_gradient{nullptr};
+	float *dummy_gradient{ nullptr };
 	size_t const dummy_gradient_bytes = batch_size * input_size * sizeof(float);
 	checkCuda(cudaMalloc(&dummy_gradient, dummy_gradient_bytes));
 
-    conv1.init(
-				kernel_nums[0],
-				kernel_sizes[0],
-				strides[0],
-				channel_num,
-				image_x, image_y,
-				dev_train_data,
-				dummy_gradient,
-				batch_size);
+	conv1.init(
+		kernel_nums[0],
+		kernel_sizes[0],
+		strides[0],
+		channel_num,
+		image_x, image_y,
+		dev_train_data,
+		dummy_gradient,
+		batch_size);
 
 	pool1.init(
 		conv1.y_desc,
 		conv1.y,
-		conv1.output_x,
 		conv1.output_y,
+		conv1.output_x,
 		2,
 		2,
 		kernel_nums[0], // 这里可能有问题
@@ -109,21 +109,21 @@ VGG::VGG(
 		batch_size);
 
 	conv2.init(
-			kernel_nums[1],
-			kernel_sizes[1],
-			strides[1],
-			kernel_nums[0],
-			pool1.y_height,
-			pool1.y_width,
-			pool1.y,
-			pool1.gradient,
-			batch_size);
+		kernel_nums[1],
+		kernel_sizes[1],
+		strides[1],
+		kernel_nums[0],
+		pool1.y_height,
+		pool1.y_width,
+		pool1.y,
+		pool1.gradient,
+		batch_size);
 
 	pool2.init(
 		conv2.y_desc,
 		conv2.y,
-		conv2.output_x,
 		conv2.output_y,
+		conv2.output_x,
 		2,
 		2,
 		kernel_nums[1], // pooling层的channel
@@ -149,17 +149,17 @@ VGG::VGG(
 		batch_size);
 }
 
-VGG::~VGG(){}
+VGG::~VGG() {}
 
-void VGG::train(unsigned const epoch){
+void VGG::train(unsigned const epoch) {
 	for (unsigned p = 0; p != epoch; p++)
 	{
-		std::cout << "[Epoch: " << p + 1 <<"]"<<std::endl;
-		unsigned *label_ptr{nullptr};
+		std::cout << "[Epoch: " << p + 1 << "]" << std::endl;
+		unsigned *label_ptr{ nullptr };
 		unsigned error_num_sum = 0;
 		int batch = 0;
 		for (unsigned i = 0; i < (train_data_num / batch_size) * batch_size - batch_size;
-			 i += batch_size)
+			i += batch_size)
 		{
 			batch++;
 			int error_num = 0;
@@ -186,7 +186,7 @@ void VGG::train(unsigned const epoch){
 			{
 				int result = 0;
 				cublasIsamax_v2(cublas, class_num,
-								softmax_layer.y + j * class_num, 1, &result);
+					softmax_layer.y + j * class_num, 1, &result);
 				// (result - 1) since cublasIsamax starts numing from 1.
 				if (result - 1 != train_labels[i + j])
 				{
@@ -204,7 +204,7 @@ void VGG::train(unsigned const epoch){
 			// backprop part
 			// softmaxbackprop
 			softmaxLossBackpropAPI(softmax_layer.y, softmax_layer.gradient,
-								   class_num, batch_size, label_ptr);
+				class_num, batch_size, label_ptr);
 			softmax_layer.backprop();
 			fc.backprop();
 			pool2.backprop();
@@ -219,14 +219,14 @@ void VGG::train(unsigned const epoch){
 
 		float error_percent = error_num_sum / float(train_data_num);
 		std::cout << "Train Acc: " << 1 - error_percent
-				  << "\tLearning rate: " << learning_rate * batch_size << std::endl;
+			<< "\tLearning rate: " << learning_rate * batch_size << std::endl;
 	}
 }
 
 // Tests networks performance(accuracy) on the test_data
 float VGG::test()
 {
-	unsigned *label_ptr{nullptr};
+	unsigned *label_ptr{ nullptr };
 	unsigned error_num = 0;
 
 	for (unsigned i = 0; i < (test_data_num / batch_size) * batch_size - batch_size; i += batch_size)
@@ -246,7 +246,7 @@ float VGG::test()
 		{
 			int result = 0;
 			cublasIsamax_v2(cublas, class_num,
-							softmax_layer.y + j * class_num, 1, &result);
+				softmax_layer.y + j * class_num, 1, &result);
 			if (result - 1 != test_labels[i + j])
 			{
 				error_num++;

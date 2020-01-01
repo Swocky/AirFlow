@@ -17,13 +17,13 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
     pooling_stride = _pooling_stride;
     batch_size = _batch_size;
     channel_num = _channel_num;
-    y_height = x_height / pooling_stride;
-    y_width = x_width / pooling_stride;
+    y_height = x_height / _pooling_stride;
+    y_width = x_width / _pooling_stride;
 	p_gradient = _p_gradient;
 
     checkCUDNN(cudnnCreateTensorDescriptor(&y_desc));
     checkCUDNN(cudnnSetTensor4dDescriptor(y_desc,
-        CUDNN_TENSOR_NHWC,
+		CUDNN_TENSOR_NCHW,
         CUDNN_DATA_FLOAT,
         batch_size,
         channel_num,
