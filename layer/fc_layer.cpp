@@ -12,8 +12,8 @@ void FullyConnectedLayer::init(
 	x =_x;
 	p_gradient = _p_gradient;
 	batch_size =_batch_size;
-	// std::cout << "input num: " << input_num << '\n';
-	// std::cout << "neuron num: " << neuron_num << '\n';
+	 std::cout << "input num: " << input_num << '\n';
+	 std::cout << "neuron num: " << neuron_num << '\n';
 	// std::cout << "batch_size: " << batch_size << '\n';
 	// allocating weights, 'w'
 	size_t const w_bytes = input_num * neuron_num * sizeof(float);
@@ -74,7 +74,7 @@ FullyConnectedLayer::FullyConnectedLayer(){
 FullyConnectedLayer::~FullyConnectedLayer(){
 }
 
-void FullyConnectedLayer::feedForward(){
+void FullyConnectedLayer::forward(){
 	const float alpha = 1.0f, beta = 0.0f;
 	// multiplying by weights, o = x*w;
 	cublasSgemm_v2(

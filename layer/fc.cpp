@@ -51,7 +51,7 @@ FullyConnected::~FullyConnected(){
 void FullyConnected::forward(){
 	//ReadArrayAPI(fc_layers.back().w, neuron_nums.back());
 	for (auto& i : fc_layers){
-		i.feedForward();
+		i.forward();
 	}
 }
 

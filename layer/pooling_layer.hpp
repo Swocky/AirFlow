@@ -11,8 +11,8 @@ public:
                         unsigned _pooling_size,
                         unsigned _pooling_stride,
                         unsigned _channel_num,
-                        unsigned _batch_size,
-						float* _last_gradient);
+						float* _p_gradient,
+                        unsigned _batch_size);
     unsigned y_height;
     unsigned y_width;
     float* y;
@@ -25,7 +25,7 @@ public:
     cudnnTensorDescriptor_t y_desc;
     cudnnPoolingDescriptor_t pooling_desc;
     float* gradient{nullptr};
-    float* next_gradient{nullptr};
+    float* p_gradient{nullptr};
 
 private:
     float* x{nullptr};

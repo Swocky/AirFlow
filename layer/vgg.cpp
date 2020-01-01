@@ -102,11 +102,11 @@ VGG::VGG(
 		conv1.y,
 		conv1.output_x,
 		conv1.output_y,
-		2,
+		3,
 		1,
-		channel_num, // 这里可能有问题
-		batch_size,
-		conv1.gradient
+		kernel_nums[0], // 这里可能有问题
+		conv1.gradient,
+		batch_size
 	);
 
 	conv2.init(
@@ -124,11 +124,11 @@ VGG::VGG(
 		conv2.y,
 		conv2.output_x,
 		conv2.output_y,
-		2,
+		3,
 		1,
-		channel_num, // 这里可能有问题
-		batch_size,
-		conv2.gradient
+		kernel_nums[1], // 这里可能有问题
+		conv2.gradient,
+		batch_size
 	);
 
 	// init FullyConnected class object, which will use
@@ -136,9 +136,9 @@ VGG::VGG(
 	// neurons in LeNet
 	fc.init(
 		neuron_nums,
-		conv2.output_x * conv2.output_y * kernel_nums[1],
-		conv2.y,
-		conv2.gradient,
+		pool2.y_height * pool2.y_width * kernel_nums[1], // 这里可能有问题
+		pool2.y,
+		pool2.gradient,
 		batch_size);
 
 	// init the last layer of the network which is softmax
