@@ -6,19 +6,21 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
                         float* _x,
                         unsigned x_height,
                         unsigned x_width,
-                        unsigned _pooling_size,
-                        unsigned _pooling_stride,
+                        unsigned _window_size,
+                        unsigned _window_stride,
+						unsigned _padding_size,
                         unsigned _channel_num,
 						float* _p_gradient,
                         unsigned _batch_size) {
     x_desc = _x_desc;
     x = _x;
-    pooling_size = _pooling_size;
-    pooling_stride = _pooling_stride;
+	padding_size = _padding_size;
+	window_stride = _window_stride;
+	padding_size = _padding_size;
     batch_size = _batch_size;
     channel_num = _channel_num;
-    y_height = x_height / _pooling_stride;
-    y_width = x_width / _pooling_stride;
+    y_height = x_height / _window_stride;
+    y_width = x_width / _window_stride;
 	p_gradient = _p_gradient;
 
     checkCUDNN(cudnnCreateTensorDescriptor(&y_desc));
@@ -34,9 +36,9 @@ void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
     checkCUDNN(cudnnSetPooling2dDescriptor(pooling_desc,
         CUDNN_POOLING_MAX,
         CUDNN_PROPAGATE_NAN,
-        pooling_size, pooling_size,
-        0,0,
-        pooling_stride, pooling_stride));
+		window_size, window_size,
+		padding_size, padding_size,
+		window_stride, window_stride));
 
 	checkCuda(cudaMalloc(
         &gradient, sizeof(float)*batch_size*channel_num*y_height*y_width));

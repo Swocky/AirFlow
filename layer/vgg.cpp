@@ -104,7 +104,8 @@ VGG::VGG(
 		conv1.output_x,
 		2,
 		2,
-		kernel_nums[0], // 这里可能有问题
+		0,
+		kernel_nums[0],
 		conv1.gradient,
 		batch_size);
 
@@ -126,7 +127,8 @@ VGG::VGG(
 		conv2.output_x,
 		2,
 		2,
-		kernel_nums[1], // pooling层的channel
+		0,
+		kernel_nums[1],
 		conv2.gradient,
 		batch_size);
 

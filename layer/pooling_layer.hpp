@@ -4,15 +4,17 @@
 
 class PoolingLayer{
 public:
-    void init(cudnnTensorDescriptor_t _x_desc,
-                        float* _x,
-                        unsigned x_height,
-                        unsigned x_width,
-                        unsigned _pooling_size,
-                        unsigned _pooling_stride,
-                        unsigned _channel_num,
+	void init(cudnnTensorDescriptor_t _x_desc,
+						float* _x,
+						unsigned x_height,
+						unsigned x_width,
+						unsigned _window_size,
+						unsigned _window_stride,
+						unsigned _padding_size,
+						unsigned _channel_num,
 						float* _p_gradient,
-                        unsigned _batch_size);
+						unsigned _batch_size);
+
     unsigned y_height;
     unsigned y_width;
     float* y;
@@ -32,6 +34,7 @@ private:
     cudnnTensorDescriptor_t x_desc;
     unsigned channel_num;
     unsigned batch_size;
-    unsigned pooling_size;
-    unsigned pooling_stride;
+    unsigned window_size;
+    unsigned window_stride;
+	unsigned padding_size;
 };
