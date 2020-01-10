@@ -17,7 +17,7 @@ public:
 		unsigned const _batch_size
 	);
 
-	void feedForward();
+	void forward();
 	void backprop();
 
 
