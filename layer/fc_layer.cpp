@@ -53,7 +53,7 @@ void FullyConnectedLayer::init(
 	checkCUDNN(cudnnCreateActivationDescriptor(&activation_desc));
 	checkCUDNN(cudnnSetActivationDescriptor(
 		activation_desc,
-		CUDNN_ACTIVATION_RELU,
+		CUDNN_ACTIVATION_ELU,
 		CUDNN_NOT_PROPAGATE_NAN,
 		1.0
 	));
