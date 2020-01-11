@@ -2,15 +2,15 @@
 
 // convlutional layer constructor
 void ConvolutionalLayer::init(
-	unsigned const _kernel_num, 
-	unsigned const _kernel_size,
-	unsigned const _stride,
-	unsigned const _channel_num,
-	unsigned const _input_x,
-	unsigned const _input_y,
-	float* _x,
-	float* _p_gradient,
-	unsigned const _batch_size
+	unsigned const _kernel_num,        // 卷积核数量（下一层的通道数）
+	unsigned const _kernel_size,       // 卷积核大小（大小为 _kernel_size * _kernel_size）
+	unsigned const _stride, 		   // 卷积步幅
+	unsigned const _channel_num,       // 输入参数的通道数
+	unsigned const _input_x,   		   // 输入数据
+	unsigned const _input_y,           // 输入数据对应的标签
+	float* _x,                         // 本层x
+	float* _p_gradient,                // 前一层的gradient
+	unsigned const _batch_size         // batch大小
 ) {
 	kernel_num = _kernel_num;
 	kernel_size = _kernel_size;

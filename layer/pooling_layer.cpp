@@ -2,16 +2,16 @@
 
 PoolingLayer::PoolingLayer() {}
 
-void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,
-                        float* _x,
-                        unsigned x_height,
-                        unsigned x_width,
-                        unsigned _window_size,
-                        unsigned _window_stride,
-						unsigned _padding_size,
-                        unsigned _channel_num,
-						float* _p_gradient,
-                        unsigned _batch_size) {
+void PoolingLayer::init(cudnnTensorDescriptor_t _x_desc,   // 前一层的输入描述符
+                        float* _x,                         // 输入数据
+                        unsigned x_height,                 // feature map长度
+                        unsigned x_width,                  // feature map宽度
+                        unsigned _window_size,             // 池化层大小
+                        unsigned _window_stride,           // 池化层步幅
+						unsigned _padding_size,            // 池化层用于保持边界信息的拓展边缘大小
+                        unsigned _channel_num,             // 输入通道数（与输出通道数相同）
+						float* _p_gradient,                // 前一层梯度
+                        unsigned _batch_size) {            // batch大小
     x_desc = _x_desc;
     x = _x;
 	window_size = _window_size;

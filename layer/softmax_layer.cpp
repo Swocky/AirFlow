@@ -2,11 +2,11 @@
 
 SoftmaxLayer::SoftmaxLayer() {} // default
 
-void SoftmaxLayer::init(unsigned const _class_num,
-	                    unsigned const _input_num,
-	                    float* _x,
-	                    float* _p_gradient,
-	                    unsigned const _batch_size){
+void SoftmaxLayer::init(unsigned const _class_num, // 分类数
+	                    unsigned const _input_num, // 输入维度
+	                    float* _x,                 // 输入数据
+	                    float* _p_gradient,        // 前层的梯度
+	                    unsigned const _batch_size){ // batch的大小
 	class_num = _class_num;
 	input_num = _input_num;
 	x = _x;

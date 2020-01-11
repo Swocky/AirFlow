@@ -1,19 +1,19 @@
 #include "fc_layer.hpp"
 
 void FullyConnectedLayer::init(
-	unsigned const _neuron_num,
-	unsigned const _input_num,
-	float* _x,
-	float* _p_gradient,
-	unsigned const _batch_size
+	unsigned const _neuron_num,   // 全连接层维度数量
+	unsigned const _input_num,    // 
+	float* _x,                    // 输入数据
+	float* _p_gradient,           // 前一层的梯度
+	unsigned const _batch_size    // batch大小
 ){
 	neuron_num = _neuron_num;
 	input_num = _input_num;
 	x =_x;
 	p_gradient = _p_gradient;
 	batch_size =_batch_size;
-	 std::cout << "input num: " << input_num << '\n';
-	 std::cout << "neuron num: " << neuron_num << '\n';
+	//  std::cout << "input num: " << input_num << '\n';
+	//  std::cout << "neuron num: " << neuron_num << '\n';
 	// std::cout << "batch_size: " << batch_size << '\n';
 	// allocating weights, 'w'
 	size_t const w_bytes = input_num * neuron_num * sizeof(float);
